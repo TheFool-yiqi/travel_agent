@@ -1,0 +1,42 @@
+---
+description: Route 1 架构准则——参考代码只借功能，实现必须符合本项目分层
+alwaysApply: true
+---
+
+# Travel Agent：参考 vs 本地架构
+
+外部/参考代码（Handoffs、教程、粘贴片段）**只借业务能力**，不得照搬目录、类名或调用链。实现前先对照 `AGENTS.md` 与现有同类模块（如交通 `tools/transport` + `agents/transport/coordinator`）。
+
+## 分层与入口（Route 1）
+
+```
+graph/nodes     → 显式编排；预执行 step_config.tools，不在节点内绑 ReAct 工具链
+tools/          → 业务唯一入口（如 query_destination_info、query_transport_options）
+graph/routers/  → 域内分类、并行、综合（如 destination_router）
+agents/         → 域内 ReAct / Subagent（如 explore_agent、transport coordinator）
+knowledge/      → RAG 管道与检索服务（rag_service、rag_query）
+```
+
+- **禁止** graph/nodes 直连 HTTP、MCP、向量库
+- **禁止** 为同一能力叠多层入口（协调器 + Router + 重复 tool 定义）
+- **禁止** 无必要地同时维护 sync/async 两套相同工具或双 Router
+
+## 参考功能落地方式
+
+| 参考常见形态 | 本项目做法 |
+|--------------|------------|
+| 单 Agent 绑满 tools | Graph 预执行 **一个** tool；复杂推理放进 agents 或 router 子图 |
+| `app.rag.*` | `app/knowledge/*` + `app/tools/rag.py` |
+| 探索 + 天气并行 | `destination_router`：explore（agents）+ weather（tools） |
+| 自主选 RAG 工具 | `explore_agent` + `get_rag_tools()`，底层走 `rag_service` |
+
+## 改动前自检
+
+1. 是否已有同类模块可扩展（优先扩展，少新建平行路径）？
+2. 新文件是否落在正确层（tools / agents / graph / knowledge）？
+3. 是否与 `step_config` + `step_context.run_step_tools` 模式一致？
+4. 能否用单一回退链（如无 LLM → rag_search / 本地攻略）？
+
+## 默认 LLM
+
+对话与 Agent 默认 **MiMo**（`get_chat_model()`），嵌入用 DashScope。

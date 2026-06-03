@@ -1,0 +1,6 @@
+{
+  "name": "approval_revision",
+  "description": "审批拒绝后修订流程",
+  "input": {},
+  "expected": {}
+}

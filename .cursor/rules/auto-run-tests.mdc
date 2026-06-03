@@ -1,0 +1,30 @@
+---
+description: 实现功能或测试脚本后必须自动运行相关测试
+alwaysApply: true
+---
+
+# 实现后自动测试
+
+完成涉及**可运行代码**的任务后（新功能、MCP Server、adapter、测试脚本、bug 修复等），**在同一轮对话内**自动执行验证，不要只交付代码让用户自己测。
+
+## 必做
+
+1. **有测试文件** → 运行对应 pytest（优先 `-m "not integration"` 做快速验证；若改动影响集成路径或用户明确要求，再跑 integration）。
+2. **新增/改动了 `tests/test_*.py` 或 `scripts/test_*.py`** → 实现完成后立即运行该文件或相关用例。
+3. **新增 MCP Server / provider / adapter** → 至少跑对应 `test_mcp_*.py`；若环境变量齐全，可顺带跑 integration。
+4. **测试失败** → 先修再汇报；不要带着已知失败结束任务。
+
+## 命令约定（本项目）
+
+```powershell
+cd D:\public-project\travel_agent\backend
+uv run pytest tests/test_<module>.py -v
+```
+
+Windows PowerShell 用 `;` 链接命令，不用 `&&`。
+
+## 汇报
+
+- 简要说明跑了哪些命令、通过/跳过/失败数量。
+- 若因缺少 API Key 跳过 integration，注明需要的环境变量。
+- 不要假设用户会自行运行测试。

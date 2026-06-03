@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment & secrets
+.env
+frontend/.env
+
+# IDE / Agent
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.turbo/
+*.tsbuildinfo
+
+# Data & exports
+data/exports/*
+!data/exports/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Chroma / local vector stores
+.chroma/
+chroma_data/
+
+# uv
+# Keep uv.lock tracked
