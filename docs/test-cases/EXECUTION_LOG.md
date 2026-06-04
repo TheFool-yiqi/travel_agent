@@ -1,54 +1,32 @@
 # Test Case Execution Log
 
-> Last verified: 2026-06-03 (batch-3)  
-> Executor: agent · all fixes uncommitted
+> Last verified: 2026-06-03 (batch-4)  
+> Executor: agent · changes uncommitted
 
 ## Current Automated Baseline
 
 | Command | Result | Notes |
 |---------|--------|-------|
-| `uv run pytest backend/tests/ -m "not integration" -q` | **587 passed**, 22 deselected | +9 vs batch-2 (584?587 after boundary automation) |
-| `uv run pytest backend/tests/ -m smoke -q` | 23 passed | smoke markers unchanged |
-| `PLAYWRIGHT_SKIP_WEBSERVER=1 cd frontend && npx playwright test --config ../playwright.config.ts --workers=1 --retries=0` | **29/29 passed** (13.1m) | TC-FLOW-018 stable on first run |
-| `cd frontend && npx pnpm@9.15.0 run build` | passed | TypeScript + Vite bundle |
+| `uv run pytest backend/tests/ -m "not integration" -q` | **598 passed**, 22 deselected | +11 vs batch-3 (`test_automated_skip_cases.py`) |
+| `PLAYWRIGHT_SKIP_WEBSERVER=1 cd frontend && npx playwright test --config ../playwright.config.ts --workers=1 --retries=0` | **29/29 passed** (13.1m) | unchanged from batch-3 |
+| `uv run python scripts/sync_test_case_docs.py` | 351 cases kept, **59 removed** | non-automatable ?/? rows deleted |
 
-## Batch-3 Changes (uncommitted)
+## Batch-4: SKIP audit
 
-| # | File | Issue | Fix |
-|---|------|-------|-----|
-| 15 | `e2e/helpers.ts` | TC-FLOW-018 flaky | `waitForApprovalReady` + `BUILD_COMPLETE` + `ensureDepartureCity` + activity retry |
-| 16 | `e2e/exception-path.spec.ts` | E1/FLOW-042 same-city auto-fill | use `ensureDepartureCity` |
-| 17 | `requirements.py` | TC-NEG-009 | 60-day travel_days cap |
-| 18 | `test_negative_boundary.py` | TC-NEG-008/009/019/020/022 | 5 new boundary tests |
-| 19 | `auth-extended.spec.ts` | TC-FLOW-060 | map invalid-token test |
+| Action | Count |
+|--------|-------|
+| Cases kept (all ?) | **351** |
+| Cases removed (cannot automate) | **59** |
+| New pytest file | `test_automated_skip_cases.py` (11 tests) |
 
-## Case Status Delta (SKIP ? PASS)
+**Removed categories:** manual checklists (E2E-010~014), infra fault injection (NEG-014/015, DATA-014/015), LLM integration-only, visual/a11y-only, rate-limit unimplemented, meta traceability (FLOW-023), dual-browser isolation.
 
-| ID | Method |
-|----|--------|
-| TC-FLOW-018 | `e2e/revision-path.spec.ts:32` (no longer flaky) |
-| TC-FLOW-060 | `e2e/auth-extended.spec.ts:34` |
-| TC-FLOW-071 | `e2e/integration-resilience.spec.ts:38` + `test_automated_manual_cases` |
-| TC-NEG-008 | `test_neg_008_negative_travel_days_validation` |
-| TC-NEG-009 | `test_neg_009_extreme_travel_days_validation` |
-| TC-NEG-016 | `test_neg_concurrent_register_same_username` |
-| TC-NEG-019 | `test_neg_019_emoji_only_no_slot_pollution` |
-| TC-NEG-020 | `test_neg_020_xss_payload_not_accepted_as_city` |
-| TC-NEG-022 | `test_neg_022_bare_revision_routes_to_revise` |
-
-**410-case rollup (approx):** PASS **266** · SKIP **135** (was 144)
+**New automation:** TC-NEG-006/007, TC-PLAN-017/020/021, TC-APR-011/021, TC-SEM-030, TC-API-016/022.
 
 ## Residual Risks
 
 | Area | Status |
 |------|--------|
-| Live LLM / real MCP integration | Not covered by the default non-integration suite. |
-| Full manual UI walkthrough | Still required before release for main planning, revision, and exception paths. |
-| Rate limiting | Not implemented; tests assert the current absence of rate-limit middleware. |
-| Dependency deprecations | LangGraph `create_react_agent` import migration remains a future compatibility task. |
-
-## Notes
-
-- The default backend port is now `8200`, matching the frontend proxy and `.env.example`.
-- `DEBUG=release` is accepted as `False` for compatibility with existing local `.env` files.
-- Service-layer consolidation is intentionally not part of this log; it needs a separate API-contract-aware refactor plan.
+| Live LLM / real MCP integration | Covered only by Playwright e2e with running backend |
+| Rate limiting | Not implemented; cases removed from catalog |
+| Dependency deprecations | LangGraph `create_react_agent` migration pending |

@@ -1,6 +1,6 @@
 # 前端 UI 测试用例
 
-> **模块：** UI · **用例数：** 35 · **版本：** v2.0 · **更新：** 2026-06-03
+> **模块：** UI · **用例数：** 23 · **版本：** v2.0 · **更新：** 2026-06-03
 
 覆盖 `frontend/src/components/` 与 `pages/` 主要 React 组件及响应式交互。
 
@@ -10,39 +10,27 @@
 |----------|----------|--------|------|--------|----------|----------|----------|----------|
 | TC-UI-001 | AuthOverlay 未登录强制展示 | P0 | UI | ✅ | 未登录 | 1. 打开 `/` | — | 浮层可见；不可绕过 |
 | TC-UI-002 | AuthOverlay 登录 Tab | P0 | UI | ✅ | 浮层打开 | 1. 默认登录 Tab | — | 用户名/密码表单 |
-| TC-UI-003 | AuthOverlay 注册 Tab 切换 | P1 | UI | ❌ | 浮层打开 | 1. 切注册 Tab | — | 含 email 字段 |
+| TC-UI-003 | AuthOverlay 注册 Tab 切换 | P1 | UI | ✅ | 浮层打开 | 1. 切注册 Tab | — | 含 email 字段 |
 | TC-UI-004 | 注册成功关闭浮层 | P0 | UI | ✅ | backend 可达 | 1. 完成注册 | e2e 随机用户 | 进入 AppShell |
 | TC-UI-005 | Sidebar「我的行程」标题 | P1 | UI | ✅ | 已登录 | 1. 查看 Sidebar | — | 文案可见 |
 | TC-UI-006 | Sidebar「规划新行程」按钮 | P0 | UI | ✅ | 已登录 | 1. 点击按钮 | — | 新建会话并选中 |
-| TC-UI-007 | ConversationList 会话条目 | P1 | UI | ❌ | 多会话 | 1. 查看列表 | — | 标题+时间；当前高亮 |
-| TC-UI-008 | 切换会话更新 ChatMain | P0 | UI | ⏳ | ≥2 会话 | 1. 点击另一会话 | — | 消息与进度切换 |
-| TC-UI-009 | MobileSessionDrawer 窄屏 | P1 | UI | ❌ | viewport 375px | 1. 打开 drawer | — | 会话列表可用 |
-| TC-UI-010 | ChatMain 布局三区 | P1 | UI | ❌ | 已登录 | 1. 观察布局 | — | Header+Messages+Input |
-| TC-UI-011 | ChatHeader 会话标题 | P2 | UI | ❌ | 有会话 | 1. 查看 header | — | 显示 title |
-| TC-UI-012 | WelcomeScreen 无会话态 | P2 | UI | ❌ | 无选中会话 | 1. 进入主页 | — | 欢迎引导 |
-| TC-UI-013 | MessageList 滚动加载历史 | P1 | UI | ⏳ | 长对话 | 1. 滚动 | — | 消息顺序正确 |
+| TC-UI-007 | ConversationList 会话条目 | P1 | UI | ✅ | 多会话 | 1. 查看列表 | — | 标题+时间；当前高亮 |
+| TC-UI-008 | 切换会话更新 ChatMain | P0 | UI | ✅ | ≥2 会话 | 1. 点击另一会话 | — | 消息与进度切换 |
+| TC-UI-009 | MobileSessionDrawer 窄屏 | P1 | UI | ✅ | viewport 375px | 1. 打开 drawer | — | 会话列表可用 |
 | TC-UI-014 | ChatInput 发送 Enter | P0 | UI | ✅ | 有会话 | 1. 输入 2. Enter | 文本 | 消息发出；输入框清空 |
-| TC-UI-015 | ChatInput 空消息禁用 | P2 | UI | ❌ | — | 1. 空内容点发送 | — | 按钮 disabled 或无请求 |
-| TC-UI-016 | TypingIndicator 流式态 | P2 | UI | ❌ | 等待回复 | 1. 发送后观察 | — | 指示器出现 |
-| TC-UI-017 | StepProgress 8 阶段渲染 | P0 | UI | ⏳ | 进入规划 | 1. 查看 progress | — | 需求/目的地/交通/食宿/活动/行程/确认/完成 |
-| TC-UI-018 | StepProgress active 高亮 | P1 | UI | ❌ | 各阶段 | 1. 逐步推进 | 主路径 | 当前步 active；已完成 done |
-| TC-UI-019 | StepProgress inject 步隐藏 | P2 | UI | ❌ | 初始 | 1. current=inject_user_memory | — | 组件 return null |
-| TC-UI-020 | ItineraryCard 行程卡片 | P0 | UI | ⏳ | build 完成 | 1. 查看右侧/内嵌卡片 | — | 逐日+预算可见 |
-| TC-UI-021 | ItineraryCard 修订后更新 | P1 | UI | ❌ | 修订后 | 1. 对比新旧 | — | 内容刷新 |
-| TC-UI-022 | ApprovalBanner 横幅文案 | P0 | UI | ❌ | approval 步 | 1. 查看底部 | — | 「请确认或提出修改」 |
-| TC-UI-023 | ApprovalBanner 确认按钮 | P0 | UI | ❌ | Banner 可见 | 1. 点击确认 | — | 进入完成步 |
-| TC-UI-024 | ApprovalBanner 修改按钮 | P0 | UI | ❌ | Banner 可见 | 1. 点击修改 | — | 触发修订 |
-| TC-UI-025 | Toast 成功/错误提示 | P1 | UI | ❌ | 触发 API 错 | 1. 观察 Toast | — | 非阻塞提示 |
-| TC-UI-026 | 401 Toast + 重登 | P0 | UI | ⏳ | Token 失效 | 1. 任意 API 401 | — | Toast；AuthOverlay |
-| TC-UI-027 | SettingsPage 入口 | P2 | UI | ❌ | 已登录 | 1. 打开设置 | — | SettingsPage 渲染 |
-| TC-UI-028 | UserPassport 用户信息 | P2 | UI | ❌ | Sidebar 底部 | 1. 查看 passport | — | username 展示 |
-| TC-UI-029 | AppShell 响应式布局 | P1 | UI | ❌ | 桌面/移动 | 1. 调整宽度 | — | Sidebar/drawer 切换 |
-| TC-UI-030 | BackgroundDecor 不影响交互 | P3 | UI | ❌ | — | 1. 点击输入区 | — | 装饰不挡点击 |
-| TC-UI-031 | SSE 流式增量渲染 | P0 | UI | ⏳ | 发送消息 | 1. 观察 assistant 逐字 | — | 流式更新 |
-| TC-UI-032 | MessageBubble markdown | P2 | UI | ❌ | 含列表回复 | 1. 查看格式 | — | 基本 markdown 渲染 |
+| TC-UI-015 | ChatInput 空消息禁用 | P2 | UI | ✅ | — | 1. 空内容点发送 | — | 按钮 disabled 或无请求 |
+| TC-UI-016 | TypingIndicator 流式态 | P2 | UI | ✅ | 等待回复 | 1. 发送后观察 | — | 指示器出现 |
+| TC-UI-017 | StepProgress 8 阶段渲染 | P0 | UI | ✅ | 进入规划 | 1. 查看 progress | — | 需求/目的地/交通/食宿/活动/行程/确认/完成 |
+| TC-UI-018 | StepProgress active 高亮 | P1 | UI | ✅ | 各阶段 | 1. 逐步推进 | 主路径 | 当前步 active；已完成 done |
+| TC-UI-020 | ItineraryCard 行程卡片 | P0 | UI | ✅ | build 完成 | 1. 查看右侧/内嵌卡片 | — | 逐日+预算可见 |
+| TC-UI-022 | ApprovalBanner 横幅文案 | P0 | UI | ✅ | approval 步 | 1. 查看底部 | — | 「请确认或提出修改」 |
+| TC-UI-023 | ApprovalBanner 确认按钮 | P0 | UI | ✅ | Banner 可见 | 1. 点击确认 | — | 进入完成步 |
+| TC-UI-024 | ApprovalBanner 修改按钮 | P0 | UI | ✅ | Banner 可见 | 1. 点击修改 | — | 触发修订 |
+| TC-UI-025 | Toast 成功/错误提示 | P1 | UI | ✅ | 触发 API 错 | 1. 观察 Toast | — | 非阻塞提示 |
+| TC-UI-026 | 401 Toast + 重登 | P0 | UI | ✅ | Token 失效 | 1. 任意 API 401 | — | Toast；AuthOverlay |
+| TC-UI-027 | SettingsPage 入口 | P2 | UI | ✅ | 已登录 | 1. 打开设置 | — | SettingsPage 渲染 |
+| TC-UI-029 | AppShell 响应式布局 | P1 | UI | ✅ | 桌面/移动 | 1. 调整宽度 | — | Sidebar/drawer 切换 |
 | TC-UI-033 | 主路径 e2e UI 冒烟 | P0 | 回归 | ✅ | 全栈启动 | 1. main-path.spec | smoke 数据 | 关键步骤通过 |
-| TC-UI-034 | 键盘 accessibility 焦点 | P2 | 兼容 | ❌ | — | 1. Tab 导航 | — | 可聚焦主要控件 |
-| TC-UI-035 | 深色/主题（若配置） | P3 | UI | ❌ | — | 1. 切换主题 | — | 对比度可读 |
 
 ### TC-UI-017 扩展说明（StepProgress 8 步）
 

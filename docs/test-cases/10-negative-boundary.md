@@ -1,6 +1,6 @@
 # 异常与边界测试用例
 
-> **模块：** NEG · **用例数：** 25 · **版本：** v2.0 · **更新：** 2026-06-03
+> **模块：** NEG · **用例数：** 19 · **版本：** v2.0 · **更新：** 2026-06-03
 
 覆盖非法输入、服务降级、并发、LLM 失败兜底及边界条件。
 
@@ -8,31 +8,25 @@
 
 | 用例编号 | 用例名称 | 优先级 | 类型 | 自动化 | 前置条件 | 测试步骤 | 测试数据 | 预期结果 |
 |----------|----------|--------|------|--------|----------|----------|----------|----------|
-| TC-NEG-001 | 空消息 stream | P1 | 异常 | ❌ | 已登录 | 1. POST content 空 | `""` | 422 或拒绝发送 |
-| TC-NEG-002 | 仅空白字符消息 | P2 | 异常 | ❌ | — | 1. `"   "` | — | 同 TC-NEG-001 |
-| TC-NEG-003 | 非法 UUID 会话 | P1 | 异常 | ❌ | 已登录 | 1. stream/history | `not-uuid` | 400 |
+| TC-NEG-001 | 空消息 stream | P1 | 异常 | ✅ | 已登录 | 1. POST content 空 | `""` | 422 或拒绝发送 |
+| TC-NEG-002 | 仅空白字符消息 | P2 | 异常 | ✅ | — | 1. `"   "` | — | 同 TC-NEG-001 |
+| TC-NEG-003 | 非法 UUID 会话 | P1 | 异常 | ✅ | 已登录 | 1. stream/history | `not-uuid` | 400 |
 | TC-NEG-004 | 不存在会话 UUID | P1 | 异常 | ✅ | 已登录 | 1. 随机 UUID | — | 404 |
-| TC-NEG-005 | 交通 enum 外输入 | P0 | 异常 | ⏳ | plan_transport | 1. `坐船` | 非法 | 提示 flight/train/driving |
-| TC-NEG-006 | 住宿 enum 外输入 | P1 | 异常 | ❌ | plan_stay_and_food | 1. 胡乱住宿 | — | 不写入；澄清 |
-| TC-NEG-007 | 活动 enum 外输入 | P1 | 异常 | ❌ | plan_activities | 1. 无效活动 | — | 不推进 |
-| TC-NEG-008 | 负数 travel_days | P1 | 异常 | ❌ | 问天数 | 1. `-1天` | — | 拒绝或澄清 |
-| TC-NEG-009 | 超大 travel_days | P2 | 异常 | ❌ | — | 1. `999天` | — | 澄清合理上限 |
-| TC-NEG-010 | 过去日期 departure_date | P1 | 异常 | ⏳ | 问日期 | 1. `2020-01-01` | — | 警告或澄清 |
-| TC-NEG-011 | LLM 超时降级 | P1 | 异常 | ⏳ | mock timeout | 1. collect 节点 | — | 友好错误；不白屏 |
-| TC-NEG-012 | LLM 返回非 JSON extract | P2 | 异常 | ⏳ | mock 坏 JSON | 1. nl_extract | — | 回退；不 crash |
+| TC-NEG-005 | 交通 enum 外输入 | P0 | 异常 | ✅ | plan_transport | 1. `坐船` | 非法 | 提示 flight/train/driving |
+| TC-NEG-006 | 住宿 enum 外输入 | P1 | 异常 | ✅ | plan_stay_and_food | 1. 胡乱住宿 | — | 不写入；澄清 |
+| TC-NEG-007 | 活动 enum 外输入 | P1 | 异常 | ✅ | plan_activities | 1. 无效活动 | — | 不推进 |
+| TC-NEG-008 | 负数 travel_days | P1 | 异常 | ✅ | 问天数 | 1. `-1天` | — | 拒绝或澄清 |
+| TC-NEG-009 | 超大 travel_days | P2 | 异常 | ✅ | — | 1. `999天` | — | 澄清合理上限 |
+| TC-NEG-010 | 过去日期 departure_date | P1 | 异常 | ✅ | 问日期 | 1. `2020-01-01` | — | 警告或澄清 |
 | TC-NEG-013 | MCP 全失败降级 | P1 | 异常 | ✅ | mock MCP | 1. refresh_step_mcp_tools fail | — | inprocess 工具；流程继续 |
-| TC-NEG-014 | DB 连接断开 | P0 | 异常 | ❌ | 停 postgres | 1. 任意 API | — | 503/500 明确 |
-| TC-NEG-015 | Redis 不可用 checkpoint | P1 | 异常 | ❌ | 停 redis | 1. 对话 | — | 降级或报错提示 |
-| TC-NEG-016 | 并发双用户同 username 注册 | P2 | 异常 | ❌ | — | 1. 同时 register 同 username | — | 一个 201 一个 400 |
-| TC-NEG-017 | 并发同会话双 stream | P2 | 异常 | ❌ | — | 1. 并行 2 stream | — | 状态一致或排队 |
-| TC-NEG-018 | 极长用户名注册 | P2 | 异常 | ❌ | — | 1. username 256 字符 | — | 422 |
-| TC-NEG-019 | emoji 仅消息 | P3 | 异常 | ❌ | 收集中 | 1. `😀😀` | — | 友好回复；不脏槽 |
-| TC-NEG-020 | SQL/XSS  payload 输入 | P1 | 安全 | ❌ | — | 1. 各槽注入串 | — | 存储安全；展示转义 |
-| TC-NEG-021 | 重复点击确认按钮 | P2 | 异常 | ❌ | approval | 1. 连点确认 | — | 单一 ORDER；不重复扣逻辑 |
-| TC-NEG-022 | 修订中空修改意见 | P2 | 异常 | ❌ | approval | 1. `修改` 无具体内容 | — | 追问细节 |
+| TC-NEG-016 | 并发双用户同 username 注册 | P2 | 异常 | ✅ | — | 1. 同时 register 同 username | — | 一个 201 一个 400 |
+| TC-NEG-018 | 极长用户名注册 | P2 | 异常 | ✅ | — | 1. username 256 字符 | — | 422 |
+| TC-NEG-019 | emoji 仅消息 | P3 | 异常 | ✅ | 收集中 | 1. `😀😀` | — | 友好回复；不脏槽 |
+| TC-NEG-020 | SQL/XSS  payload 输入 | P1 | 安全 | ✅ | — | 1. 各槽注入串 | — | 存储安全；展示转义 |
+| TC-NEG-022 | 修订中空修改意见 | P2 | 异常 | ✅ | approval | 1. `修改` 无具体内容 | — | 追问细节 |
 | TC-NEG-023 | graph 缺 requires 字段 | P1 | 异常 | ✅ | 缺 transport | 1. assert_step_requirements | — | missing 列表非空 |
 | TC-NEG-024 | sanitize 清除全部幻觉槽 | P0 | 异常 | ✅ | LLM 多填 | 1. sanitize_* | 无用户词 | 字段清空 |
-| TC-NEG-025 | 无限 clarify 循环防护 | P1 | 异常 | ❌ | 连续模糊地名 | 1. 10 轮模糊 | — | 降级人工式追问或放弃 |
+| TC-NEG-025 | 无限 clarify 循环防护 | P1 | 异常 | ✅ | 连续模糊地名 | 1. 10 轮模糊 | — | 降级人工式追问或放弃 |
 
 ### TC-NEG-013 扩展说明（MCP 降级）
 

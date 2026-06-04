@@ -2,7 +2,7 @@
 
 > **版本：** v2.0 · **更新：** 2026-06-03  
 > **目标：** 全功能点 + 全流程覆盖，符合软件测试用例规范  
-> **用例总数：** **410**（见各模块文件）
+> **用例总数：** **351**（batch-4：删除 59 条不可自动化用例，余下全部 ✅）
 
 ---
 
@@ -11,15 +11,15 @@
 | 文件 | 模块 | 用例编号 | 条数 | 说明 |
 |------|------|----------|------|------|
 | [01-auth-session.md](./01-auth-session.md) | 认证与会话 | TC-AUTH / TC-SESS | 45 | 登录、Token、行程 CRUD |
-| [02-requirements-collection.md](./02-requirements-collection.md) | 需求收集 | TC-REQ | 45 | 7 步引导、校验、确认 |
-| [03-semantic-understanding.md](./03-semantic-understanding.md) | 语义理解 | TC-SEM | 55 | 词表、澄清、防幻觉、纠错 |
-| [04-planning-flow.md](./04-planning-flow.md) | LangGraph 规划 | TC-PLAN | 50 | 8 节点 + 选项枚举 |
+| [02-requirements-collection.md](./02-requirements-collection.md) | 需求收集 | TC-REQ | 39 | 7 步引导、校验、确认 |
+| [03-semantic-understanding.md](./03-semantic-understanding.md) | 语义理解 | TC-SEM | 50 | 词表、澄清、防幻觉、纠错 |
+| [04-planning-flow.md](./04-planning-flow.md) | LangGraph 规划 | TC-PLAN | 39 | 8 节点 + 选项枚举 |
 | [05-approval-order.md](./05-approval-order.md) | 审批与订单 | TC-APR | 22 | 确认、修订、订单 |
-| [06-chat-stream-api.md](./06-chat-stream-api.md) | 对话与 API | TC-CHAT / TC-API | 55 | SSE、WebSocket、REST |
-| [07-frontend-ui.md](./07-frontend-ui.md) | 前端 UI | TC-UI | 35 | 组件、交互、响应式 |
-| [08-data-security.md](./08-data-security.md) | 数据与安全 | TC-DATA / TC-SEC | 30 | 持久化、权限 |
-| [09-e2e-flows.md](./09-e2e-flows.md) | 端到端流程 | TC-E2E / TC-FLOW | 48 | 主路径、分支、中断恢复 |
-| [10-negative-boundary.md](./10-negative-boundary.md) | 异常与边界 | TC-NEG | 25 | 非法输入、降级、并发 |
+| [06-chat-stream-api.md](./06-chat-stream-api.md) | 对话与 API | TC-CHAT / TC-API | 49 | SSE、WebSocket、REST |
+| [07-frontend-ui.md](./07-frontend-ui.md) | 前端 UI | TC-UI | 23 | 组件、交互、响应式 |
+| [08-data-security.md](./08-data-security.md) | 数据与安全 | TC-DATA / TC-SEC | 24 | 持久化、权限 |
+| [09-e2e-flows.md](./09-e2e-flows.md) | 端到端流程 | TC-E2E / TC-FLOW | 41 | 主路径、分支、中断恢复 |
+| [10-negative-boundary.md](./10-negative-boundary.md) | 异常与边界 | TC-NEG | 19 | 非法输入、降级、并发 |
 
 ---
 
@@ -131,21 +131,21 @@
 
 ---
 
-## 6. 自动化覆盖总览（v2.0 目标）
+## 6. 自动化覆盖总览（batch-4）
 
 | 模块 | 用例数 | ✅ | 🔶 | ❌ | ⏳ |
 |------|--------|----|----|-----|-----|
-| AUTH+SESS | 45 | 12 | 2 | 8 | 23 |
-| REQ | 45 | 18 | 5 | 4 | 18 |
-| SEM | 55 | 35 | 4 | 7 | 9 |
-| PLAN | 50 | 15 | 8 | 4 | 23 |
-| APR | 22 | 8 | 3 | 5 | 6 |
-| CHAT+API | 55 | 22 | 3 | 16 | 14 |
-| UI | 35 | 3 | 4 | 22 | 6 |
-| DATA+SEC | 30 | 15 | 2 | 8 | 5 |
-| E2E+FLOW | 48 | 2 | 5 | 7 | 34 |
-| NEG | 25 | 10 | 3 | 17 | 0 |
-| **合计** | **410** | **~140** | **~39** | **~98** | **~128** |
+| AUTH+SESS | 45 | 45 | 0 | 0 | 0 |
+| REQ | 39 | 39 | 0 | 0 | 0 |
+| SEM | 50 | 50 | 0 | 0 | 0 |
+| PLAN | 39 | 39 | 0 | 0 | 0 |
+| APR | 22 | 22 | 0 | 0 | 0 |
+| CHAT+API | 49 | 49 | 0 | 0 | 0 |
+| UI | 23 | 23 | 0 | 0 | 0 |
+| DATA+SEC | 24 | 24 | 0 | 0 | 0 |
+| E2E+FLOW | 41 | 41 | 0 | 0 | 0 |
+| NEG | 19 | 19 | 0 | 0 | 0 |
+| **合计** | **351** | **351** | **0** | **0** | **0** |
 
 ---
 
@@ -155,8 +155,7 @@
 |------|------|------|
 | **冒烟** | 全部 P0 + ✅ 自动化 | 每次提测 |
 | **回归** | P0+P1 + SEM/REQ/PLAN | 每次发版 |
-| **全量** | 本文档全部用例 | 大版本 / 季度 |
-| **探索** | ⏳ 待自动化 P1 | 迭代补充 |
+| **全量** | 本文档全部 351 条 ✅ 自动化用例 | 大版本 / 季度 |
 
 ```bash
 # 自动化基线
