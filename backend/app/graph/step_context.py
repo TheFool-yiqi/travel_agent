@@ -17,6 +17,9 @@ from app.tools.search import fetch_travel_search
 from app.tools.datetime_tools import today_beijing_iso
 from app.tools.transport import fetch_transport_options
 
+# 进入 LLM prompt 的最近对话条数（不含 SystemMessage）
+DIALOGUE_WINDOW_SIZE = 20
+
 
 @dataclass(frozen=True)
 class StepContext:
@@ -167,16 +170,19 @@ def build_step_messages(
     *,
     instruction: str | None = None,
 ) -> list[BaseMessage]:
-    """组装 LLM 消息：步骤 system prompt + 长期记忆 + 对话历史"""
+    """组装 LLM 消息：步骤 system prompt + 当前轮 memory_context + 窗口化对话历史"""
     prior = state.get("messages") or []
-    memory_messages = [message for message in prior if isinstance(message, SystemMessage)]
     dialogue = [message for message in prior if not isinstance(message, SystemMessage)]
+    if len(dialogue) > DIALOGUE_WINDOW_SIZE:
+        dialogue = dialogue[-DIALOGUE_WINDOW_SIZE:]
 
-    messages: list[BaseMessage] = [
-        SystemMessage(content=system_prompt),
-        *memory_messages,
-        *dialogue,
-    ]
+    messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
+
+    memory_context = state.get("memory_context")
+    if memory_context:
+        messages.append(SystemMessage(content=memory_context))
+
+    messages.extend(dialogue)
     if instruction:
         messages.append(HumanMessage(content=instruction))
     return messages

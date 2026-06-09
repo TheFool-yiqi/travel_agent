@@ -229,7 +229,7 @@ stateDiagram-v2
 
 | Graph 节点 | Agent | Prompt |
 |------------|-------|--------|
-| `inject_user_memory` | — | LangGraph Store 记忆注入 |
+| `inject_user_memory` | — | LangGraph Store 记忆 → `memory_context`（不写入 messages） |
 | `collect_requirements` | `planner_agent` | `collect_requirements.md` |
 | `plan_destination` | `destination_agent` | `destination_planner.md` |
 | `plan_transport` | `transport_agent` | `transport_planner.md` |

@@ -21,6 +21,7 @@ def final_response(state: TravelState) -> dict:
     return {
         "current_step": "done",
         "order_id": order_id,
+        "approval_status": "approved",
         "messages": [
             AIMessage(
                 content=(

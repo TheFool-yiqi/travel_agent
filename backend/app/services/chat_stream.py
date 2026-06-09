@@ -44,7 +44,10 @@ from app.graph.greeting import build_greeting_reply, is_greeting_only_text
 from app.graph.stream_callback import set_stream_token_handler
 from app.services.conversation_bootstrap import has_assistant_messages
 
-from app.services.itinerary_service import upsert_itinerary_from_chat
+from app.services.itinerary_service import (
+    approve_itinerary_with_order,
+    upsert_itinerary_from_chat,
+)
 
 
 
@@ -293,6 +296,40 @@ async def _persist_itinerary_if_present(
 
 
 
+async def _persist_order_if_present(
+
+    conversation_id: uuid.UUID,
+
+    user: User,
+
+    message_extra: dict[str, Any] | None,
+
+) -> None:
+
+    if not message_extra:
+
+        return
+
+    order_id = message_extra.get("order_id")
+
+    if not isinstance(order_id, str) or not order_id.strip():
+
+        return
+
+    await approve_itinerary_with_order(
+
+        conversation_id,
+
+        user.id,
+
+        order_id=order_id.strip(),
+
+    )
+
+
+
+
+
 async def iter_chat_events(
 
     conversation_id: uuid.UUID,
@@ -436,10 +473,9 @@ async def iter_chat_events(
                         budget = output.get("budget")
 
                         if itinerary:
-                            message_extra = {
-                                "itinerary": itinerary,
-                                "budget": budget,
-                            }
+                            message_extra = dict(message_extra or {})
+                            message_extra["itinerary"] = itinerary
+                            message_extra["budget"] = budget
                             report = output.get("report")
                             if isinstance(report, str):
                                 message_extra["summary"] = report
@@ -456,6 +492,16 @@ async def iter_chat_events(
                             yield {
                                 "type": "approval_required",
                                 "message": "请确认行程或提出修改意见",
+                            }
+
+                    if node_name == "final_response" and isinstance(output, dict):
+                        order_id = output.get("order_id")
+                        if isinstance(order_id, str) and order_id.strip():
+                            message_extra = dict(message_extra or {})
+                            message_extra["order_id"] = order_id.strip()
+                            yield {
+                                "type": "order",
+                                "order_id": order_id.strip(),
                             }
 
                     reply_text = _assistant_text_from_node_output(output)
@@ -495,6 +541,16 @@ async def iter_chat_events(
             )
 
             await _persist_itinerary_if_present(
+
+                conversation_id,
+
+                user,
+
+                message_extra,
+
+            )
+
+            await _persist_order_if_present(
 
                 conversation_id,
 

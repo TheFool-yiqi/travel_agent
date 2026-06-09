@@ -3,7 +3,7 @@
 from langchain_core.messages import AIMessage
 from loguru import logger
 
-from app.graph.nl_extract import extract_planning_selections
+from app.graph.nl_extract import extract_planning_selections, resolve_confirmed_destination
 from app.graph.state import TravelState
 from app.graph.step_context import (
     build_step_instruction,
@@ -32,10 +32,10 @@ async def plan_destination(state: TravelState) -> dict:
 
     messages = state.get("messages") or []
     extracted = await extract_planning_selections(messages)
-    selected = (
-        state.get("selected_destination")
-        or state.get("destination")
-        or extracted.selected_destination
+    selected = resolve_confirmed_destination(
+        messages,
+        selected_destination=state.get("selected_destination"),
+        extracted_destination=extracted.selected_destination,
     )
     if selected:
         return {

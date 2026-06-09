@@ -31,6 +31,7 @@ class TravelState(TransportState, TypedDict, total=False):
     """
 
     messages: Annotated[list[AnyMessage], add_messages]
+    memory_context: Optional[str]
     current_step: str
     user_id: str
     session_id: str

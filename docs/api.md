@@ -24,3 +24,13 @@
 ## WS 事件类型
 
 见 [architecture.md#52-websocket-流式规划](architecture.md)。
+
+## 订单（MVP）
+
+当前无独立 `orders` 表。用户确认行程后：
+
+1. `final_response` 节点生成 `order_id`，SSE 推送 `type: order` 事件；
+2. `chat_stream` 调用 `approve_itinerary_with_order`，将**最新** `itineraries` 记录标记为 `approved`；
+3. 订单 payload 写入 `travel_sessions.extra_info.order`（含 `order_id`、`itinerary_id`），并同步更新 `extra_info.itinerary.status`。
+
+若会话尚无 itinerary，`approve_itinerary_with_order` 安全返回 `None`，不会导致流式整轮失败。

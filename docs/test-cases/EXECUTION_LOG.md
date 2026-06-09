@@ -1,7 +1,7 @@
 # Test Case Execution Log
 
 > Last verified: 2026-06-03 (batch-4)  
-> Executor: agent · changes uncommitted
+> Executor: agent ï¿½ changes uncommitted
 
 ## Current Automated Baseline
 
