@@ -593,18 +593,5 @@ runtime-framework-inventory.md updated for Slice 3
 Slice 3 tests pass without breaking Slice 1/2 or old graph compatibility tests
 ```
 
-After this, the next implementation plan should be:
-
-```text
-13-v1-evidence-engine-implementation-plan.md
-```
-
-It should cover:
-
-```text
-EvidenceCard schema / repository
-EvidenceEngine retrieval
-ChineseTokenizer boundary
-retrieve_evidence stage real implementation
-sufficiency_result / EvidenceContext
-```
+After this, the next implementation plan is
+[13-v1-evidence-engine-implementation-plan.md](13-v1-evidence-engine-implementation-plan.md).

@@ -18,7 +18,7 @@
 01-08 = RAG / EvidenceCard / 在线检索流程的局部设计
 09 = PlanningRuntime 新内核的 V1 架构蓝图
 10 = V1 实施路线图和落地切片
-11+ = 按切片拆分的实施计划（11 = Runtime Skeleton，12 = Collect & Context）
+11+ = 按切片拆分的实施计划（11 = Runtime Skeleton，12 = Collect & Context，13 = EvidenceEngine）
 ```
 
 当 `06-agent-flow-context.md` 或 `08-v1-scope.md` 中的旧式线上流程与
@@ -45,6 +45,7 @@ Skeleton 与 LangGraph / streaming adapter，不进入 collect、Evidence、Tool
 | [10-v1-implementation-roadmap.md](10-v1-implementation-roadmap.md) | V1 落地路线、文件落点、优先级、阶段切片、验证策略和风险控制 |
 | [11-v1-runtime-skeleton-implementation-plan.md](11-v1-runtime-skeleton-implementation-plan.md) | RuntimeState、RuntimeEvent、9 阶段骨架、LangGraph executor adapter 和 runtime stream adapter 的实施计划 |
 | [12-v1-collect-context-implementation-plan.md](12-v1-collect-context-implementation-plan.md) | Collect 迁移、PlanningNeed 边界、ContextAssembler 和 prepare_base_context 的 Slice 3 实施计划（**已完成**） |
+| [13-v1-evidence-engine-implementation-plan.md](13-v1-evidence-engine-implementation-plan.md) | EvidenceCard 检索、EvidenceEngine、ChineseTokenizer 和 retrieve_evidence 的 Slice 4 实施计划 |
 
 ## 当前定稿结论
 

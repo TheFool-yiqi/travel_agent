@@ -991,7 +991,9 @@ browser trace UI tests
 
 Slice 1/2 实施计划：[11-v1-runtime-skeleton-implementation-plan.md](11-v1-runtime-skeleton-implementation-plan.md)（已完成）。
 
-Slice 3 实施计划：[12-v1-collect-context-implementation-plan.md](12-v1-collect-context-implementation-plan.md)。
+Slice 3 实施计划：[12-v1-collect-context-implementation-plan.md](12-v1-collect-context-implementation-plan.md)（已完成）。
+
+Slice 4 实施计划：[13-v1-evidence-engine-implementation-plan.md](13-v1-evidence-engine-implementation-plan.md)。
 
 11 只覆盖 Slice 1 和 Slice 2：
 
