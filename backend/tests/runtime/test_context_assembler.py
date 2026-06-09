@@ -13,6 +13,7 @@ from app.runtime.state import (
     set_collect_context,
     set_evidence_context,
     set_planning_need,
+    set_tool_context,
 )
 
 
@@ -107,6 +108,42 @@ def test_destination_planner_receives_evidence_card_summaries_without_retrieval_
     assert "embedding_text" not in agent_context["evidence_cards"]["cards"][0]
     assert "retrieval_trace" not in agent_context
     assert "evidence_context" not in agent_context
+    assert "collect_context" not in agent_context
+
+
+def _tool_context_dict() -> dict:
+    return {
+        "weather": {
+            "status": "available",
+            "destination": "成都",
+            "date_range": "2026-07-01 ~ 3天",
+            "summary": "未来三天以多云为主",
+            "risks": ["7月2日可能有阵雨"],
+            "source": "qweather",
+            "fetched_at": "2026-06-09T12:00:00+00:00",
+        },
+        "tool_warnings": [{"code": "ignored", "message": "不应下发给 planner"}],
+    }
+
+
+def test_itinerary_integrator_receives_weather_summary_without_tool_context() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都",
+    )
+    state = set_collect_context(state, {"trip_spec": {"destination": "成都"}})
+    state = set_planning_need(state, _planning_need_dict())
+    state = set_base_context(state, _base_context_dict())
+    state = set_tool_context(state, _tool_context_dict())
+
+    agent_context = ContextAssembler().assemble("itinerary_integrator", state)
+
+    assert agent_context["weather_summary"]["status"] == "available"
+    assert agent_context["weather_summary"]["summary"].startswith("未来三天")
+    assert agent_context["weather_summary"]["risks"] == ["7月2日可能有阵雨"]
+    assert "tool_context" not in agent_context
+    assert "tool_warnings" not in agent_context
     assert "collect_context" not in agent_context
 
 

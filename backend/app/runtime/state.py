@@ -27,6 +27,7 @@ class RuntimeState(TypedDict, total=False):
     collect_turn_count: int
     evidence_context: dict[str, Any] | None
     sufficiency_result: dict[str, Any] | None
+    tool_context: dict[str, Any] | None
 
 
 def create_initial_runtime_state(
@@ -56,6 +57,7 @@ def create_initial_runtime_state(
         collect_turn_count=0,
         evidence_context=None,
         sufficiency_result=None,
+        tool_context=None,
     )
 
 
@@ -156,6 +158,16 @@ def set_sufficiency_result(
     """Return a state copy with evidence sufficiency evaluation."""
     updated = dict(state)
     updated["sufficiency_result"] = _copy_optional_dict(sufficiency_result)
+    return RuntimeState(**updated)
+
+
+def set_tool_context(
+    state: RuntimeState,
+    tool_context: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with tool enrichment context."""
+    updated = dict(state)
+    updated["tool_context"] = _copy_optional_dict(tool_context)
     return RuntimeState(**updated)
 
 

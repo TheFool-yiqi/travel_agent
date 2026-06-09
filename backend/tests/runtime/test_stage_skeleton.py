@@ -5,6 +5,7 @@ from app.runtime.stages.base import build_default_stage_handlers
 from app.runtime.stages.collect import CollectStageHandler
 from app.runtime.stages.prepare_base_context import PrepareBaseContextStageHandler
 from app.runtime.stages.retrieve_evidence import RetrieveEvidenceStageHandler
+from app.runtime.stages.tool_enrich import ToolEnrichStageHandler
 from app.runtime.state import create_initial_runtime_state
 
 
@@ -28,6 +29,8 @@ async def test_all_stage_handlers_return_matching_stage_names() -> None:
         elif isinstance(handler, PrepareBaseContextStageHandler):
             assert result["status"] == "failed"
         elif isinstance(handler, RetrieveEvidenceStageHandler):
+            assert result["status"] == "failed"
+        elif isinstance(handler, ToolEnrichStageHandler):
             assert result["status"] == "failed"
         else:
             assert result["status"] == "completed"

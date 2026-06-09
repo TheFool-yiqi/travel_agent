@@ -16,6 +16,7 @@ FORBIDDEN_CONTEXT_KEYS = frozenset(
         "raw_messages",
         "retrieval_trace",
         "evidence_context",
+        "tool_context",
     },
 )
 
@@ -65,6 +66,7 @@ V1_CONTEXT_SPECS: dict[str, ContextSpec] = {
                 "preferences",
                 "constraints",
                 "session_facts",
+                "weather_summary",
             },
         ),
     ),
@@ -91,6 +93,7 @@ V1_CONTEXT_SPECS: dict[str, ContextSpec] = {
                 "session_facts",
                 "memory_snippets",
                 "decision_snippets",
+                "weather_summary",
             },
         ),
     ),
