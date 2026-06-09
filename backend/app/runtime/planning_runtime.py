@@ -17,8 +17,12 @@ from app.runtime.stages.base import StageHandler
 from app.runtime.state import (
     RuntimeState,
     mark_stage_started,
+    record_collect_waiting,
     record_runtime_error,
     record_stage_output,
+    set_base_context,
+    set_collect_context,
+    set_planning_need,
 )
 
 
@@ -52,6 +56,7 @@ class PlanningRuntime:
                 return
 
             output = dict(result)
+            current_state = _apply_stage_state_updates(current_state, output)
             current_state = record_stage_output(
                 current_state,
                 stage=stage,
@@ -63,7 +68,33 @@ class PlanningRuntime:
                 output=output,
             )
 
+            if output.get("status") == "waiting":
+                current_state = record_collect_waiting(current_state)
+                return
+
         yield make_runtime_completed_event(run_id=run_id)
+
+
+def _apply_stage_state_updates(
+    state: RuntimeState,
+    output: dict[str, Any],
+) -> RuntimeState:
+    data = output.get("data")
+    if not isinstance(data, dict):
+        return state
+
+    updated = RuntimeState(**state)
+    nested_state = data.get("state")
+    if isinstance(nested_state, dict):
+        updated = RuntimeState(**nested_state)
+
+    if "collect_context" in data:
+        updated = set_collect_context(updated, data["collect_context"])
+    if data.get("planning_need") is not None:
+        updated = set_planning_need(updated, data["planning_need"])
+    if data.get("base_context") is not None:
+        updated = set_base_context(updated, data["base_context"])
+    return updated
 
 
 def _order_handlers(handlers: Sequence[StageHandler]) -> tuple[StageHandler, ...]:

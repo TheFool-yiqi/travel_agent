@@ -2,7 +2,10 @@ import pytest
 
 from app.runtime.executor.langgraph_executor import RuntimeLangGraphExecutor
 from app.runtime.manifest import V1_STAGE_NAMES
+from app.runtime.stages.base import build_default_stage_handlers
 from app.runtime.state import create_initial_runtime_state
+
+from .test_planning_runtime import CompletedCollectStub, _handlers_with_completed_collect
 
 
 @pytest.mark.asyncio
@@ -13,7 +16,10 @@ async def test_runtime_skeleton_happy_path() -> None:
         user_id="user_1",
         input_message="成都三天低强度，喜欢美食",
     )
-    executor = RuntimeLangGraphExecutor(checkpointer=None)
+    executor = RuntimeLangGraphExecutor(
+        checkpointer=None,
+        handlers=_handlers_with_completed_collect(),
+    )
 
     events = [event async for event in executor.stream(state)]
 

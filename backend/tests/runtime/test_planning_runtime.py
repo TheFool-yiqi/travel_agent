@@ -10,6 +10,26 @@ from app.runtime.stages.base import (
 from app.runtime.state import RuntimeState, create_initial_runtime_state
 
 
+class CompletedCollectStub:
+    """Test double that bypasses multi-turn collect for downstream stage tests."""
+
+    stage_name = "collect"
+
+    async def handle(self, state: RuntimeState) -> StageResult:
+        return StageResult(
+            stage=self.stage_name,
+            status="completed",
+            summary="collect stub completed",
+            data={"planning_need": {"confirmed_facts": []}},
+        )
+
+
+def _handlers_with_completed_collect() -> list:
+    handlers = list(build_default_stage_handlers())
+    handlers[0] = CompletedCollectStub()
+    return handlers
+
+
 @pytest.mark.asyncio
 async def test_runtime_emits_9_stage_pairs_and_runtime_completed() -> None:
     state = create_initial_runtime_state(
@@ -17,7 +37,7 @@ async def test_runtime_emits_9_stage_pairs_and_runtime_completed() -> None:
         conversation_id="conv_1",
         input_message="成都三天低强度",
     )
-    runtime = PlanningRuntime(build_default_stage_handlers())
+    runtime = PlanningRuntime(_handlers_with_completed_collect())
 
     events = [event async for event in runtime.run(state)]
 
@@ -38,13 +58,31 @@ async def test_runtime_orders_handlers_by_manifest() -> None:
         conversation_id="conv_1",
         input_message="成都三天低强度",
     )
-    runtime = PlanningRuntime(tuple(reversed(build_default_stage_handlers())))
+    runtime = PlanningRuntime(_handlers_with_completed_collect())
 
     events = [event async for event in runtime.run(state)]
 
     assert tuple(
         event.stage for event in events if event.type == "stage_started"
     ) == V1_STAGE_NAMES
+
+
+@pytest.mark.asyncio
+async def test_runtime_stops_after_collect_waiting() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="你好",
+    )
+    runtime = PlanningRuntime(build_default_stage_handlers())
+
+    events = [event async for event in runtime.run(state)]
+
+    assert [event.stage for event in events if event.type == "stage_started"] == ["collect"]
+    assert events[-1].type == "stage_completed"
+    assert events[-1].stage == "collect"
+    assert events[-1].payload["output"]["status"] == "waiting"
+    assert not any(event.type == "runtime_completed" for event in events)
 
 
 @pytest.mark.asyncio
@@ -59,7 +97,7 @@ async def test_runtime_passes_recorded_stage_output_to_next_handler() -> None:
             observed_outputs.update(state["stage_outputs"])
             return await super().handle(state)
 
-    handlers = list(build_default_stage_handlers())
+    handlers = _handlers_with_completed_collect()
     handlers[1] = ObservingHandler()
     state = create_initial_runtime_state(
         run_id="run_1",
@@ -82,7 +120,7 @@ async def test_runtime_emits_runtime_failed_and_stops() -> None:
         async def handle(self, state: RuntimeState) -> StageResult:
             raise RuntimeError("retrieval failed")
 
-    handlers = list(build_default_stage_handlers())
+    handlers = _handlers_with_completed_collect()
     handlers[2] = FailingHandler()
     state = create_initial_runtime_state(
         run_id="run_1",

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from typing import Any, TypedDict
 
 from app.runtime.manifest import V1_STAGE_NAMES, is_valid_stage
@@ -19,6 +20,11 @@ class RuntimeState(TypedDict, total=False):
     public_messages: list[dict[str, Any]]
     private_notes: list[dict[str, Any]]
     errors: list[dict[str, Any]]
+    collect_context: dict[str, Any] | None
+    planning_need: dict[str, Any] | None
+    base_context: dict[str, Any] | None
+    awaiting_user: bool
+    collect_turn_count: int
 
 
 def create_initial_runtime_state(
@@ -41,6 +47,11 @@ def create_initial_runtime_state(
         public_messages=[],
         private_notes=[],
         errors=[],
+        collect_context=None,
+        planning_need=None,
+        base_context=None,
+        awaiting_user=False,
+        collect_turn_count=0,
     )
 
 
@@ -85,6 +96,49 @@ def record_runtime_error(
     updated = dict(state)
     updated["errors"] = errors
     return RuntimeState(**updated)
+
+
+def set_collect_context(
+    state: RuntimeState,
+    collect_context: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with collect-only context updated."""
+    updated = dict(state)
+    updated["collect_context"] = _copy_optional_dict(collect_context)
+    return RuntimeState(**updated)
+
+
+def set_planning_need(
+    state: RuntimeState,
+    planning_need: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with the formal planning input contract."""
+    updated = dict(state)
+    updated["planning_need"] = _copy_optional_dict(planning_need)
+    return RuntimeState(**updated)
+
+
+def set_base_context(
+    state: RuntimeState,
+    base_context: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with shared planning background context."""
+    updated = dict(state)
+    updated["base_context"] = _copy_optional_dict(base_context)
+    return RuntimeState(**updated)
+
+
+def record_collect_waiting(state: RuntimeState) -> RuntimeState:
+    """Return a state copy that pauses the runtime until the next user turn."""
+    updated = dict(state)
+    updated["awaiting_user"] = True
+    return RuntimeState(**updated)
+
+
+def _copy_optional_dict(value: dict[str, Any] | None) -> dict[str, Any] | None:
+    if value is None:
+        return None
+    return copy.deepcopy(value)
 
 
 def _require_valid_stage(stage: str) -> None:

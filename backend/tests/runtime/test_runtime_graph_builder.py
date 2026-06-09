@@ -6,6 +6,8 @@ from app.runtime.events import RuntimeEvent
 from app.runtime.manifest import V1_STAGE_NAMES
 from app.runtime.state import create_initial_runtime_state
 
+from .test_planning_runtime import _handlers_with_completed_collect
+
 
 def test_runtime_graph_builder_uses_v1_stage_names() -> None:
     graph = build_runtime_graph(checkpointer=None)
@@ -43,7 +45,10 @@ async def test_runtime_graph_executes_happy_path_without_checkpointer() -> None:
 
 @pytest.mark.asyncio
 async def test_runtime_langgraph_executor_streams_runtime_events() -> None:
-    executor = RuntimeLangGraphExecutor(checkpointer=None)
+    executor = RuntimeLangGraphExecutor(
+        checkpointer=None,
+        handlers=_handlers_with_completed_collect(),
+    )
     state = create_initial_runtime_state(
         run_id="run_1",
         conversation_id="conv_1",

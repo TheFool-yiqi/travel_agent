@@ -4,8 +4,12 @@ from app.runtime.manifest import V1_STAGE_NAMES, is_valid_stage
 from app.runtime.state import (
     create_initial_runtime_state,
     mark_stage_started,
+    record_collect_waiting,
     record_runtime_error,
     record_stage_output,
+    set_base_context,
+    set_collect_context,
+    set_planning_need,
 )
 
 
@@ -51,6 +55,69 @@ def test_create_initial_runtime_state_has_no_prompt_context() -> None:
     assert state["stage_outputs"] == {}
     assert "prompt" not in state
     assert "assembled_context" not in state
+    assert state.get("collect_context") is None
+    assert state.get("planning_need") is None
+    assert state.get("base_context") is None
+    assert state.get("awaiting_user") is False
+    assert state.get("collect_turn_count") == 0
+
+
+def test_set_collect_context_returns_copy() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都三天低强度",
+    )
+    collect_context = {"trip_spec": {"destination": "成都"}}
+
+    updated = set_collect_context(state, collect_context)
+    collect_context["trip_spec"]["destination"] = "重庆"
+
+    assert updated["collect_context"] == {"trip_spec": {"destination": "成都"}}
+    assert state.get("collect_context") is None
+
+
+def test_set_planning_need_returns_copy() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都三天低强度",
+    )
+    planning_need = {"confirmed_facts": [{"field": "destination", "value": "成都"}]}
+
+    updated = set_planning_need(state, planning_need)
+    planning_need["confirmed_facts"].append({"field": "travel_days", "value": 3})
+
+    assert len(updated["planning_need"]["confirmed_facts"]) == 1
+    assert state.get("planning_need") is None
+
+
+def test_set_base_context_returns_copy() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都三天低强度",
+    )
+    base_context = {"planning_need_summary": {"destination": "成都"}}
+
+    updated = set_base_context(state, base_context)
+    base_context["planning_need_summary"]["destination"] = "重庆"
+
+    assert updated["base_context"] == {"planning_need_summary": {"destination": "成都"}}
+    assert state.get("base_context") is None
+
+
+def test_record_collect_waiting_sets_awaiting_user_without_mutating_input() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都三天低强度",
+    )
+
+    updated = record_collect_waiting(state)
+
+    assert updated["awaiting_user"] is True
+    assert state.get("awaiting_user") is False
 
 
 def test_mark_stage_started_updates_copy_and_validates_stage() -> None:
