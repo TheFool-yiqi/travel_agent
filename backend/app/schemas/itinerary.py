@@ -45,3 +45,12 @@ class ItinerarySessionPayload(BaseModel):
     summary: str | None = None
     version: int | None = None
     itinerary_id: uuid.UUID | None = None
+    status: ItineraryStatus | None = None
+
+
+class OrderSessionPayload(BaseModel):
+    """写入 travel_sessions.extra_info.order 的结构。"""
+
+    order_id: str
+    itinerary_id: uuid.UUID | None = None
+    status: Literal["confirmed"] = "confirmed"

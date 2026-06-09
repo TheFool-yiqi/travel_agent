@@ -25,6 +25,17 @@ REQUIRED_FIELDS = (
 )
 
 
+def _party_size(requirement: dict) -> int:
+    adults = int(requirement.get("adult_count") or 1)
+    children = int(requirement.get("children_count") or 0)
+    return max(adults + children, 1)
+
+
+def _trip_budget_cap(requirement: dict, budget_max: float) -> float:
+    """需求收集阶段 budget_max 为每人上限，行程预算为全员总计。"""
+    return float(budget_max) * _party_size(requirement)
+
+
 def budget_warning(state: TravelState, budget: dict) -> str | None:
     """预算超支警告（内联 critic，不单独图节点）。"""
     requirement = state.get("user_requirement") or {}
@@ -32,10 +43,13 @@ def budget_warning(state: TravelState, budget: dict) -> str | None:
     if budget_max is None:
         return None
     total = float(budget.get("total") or 0)
-    limit = float(budget_max)
-    if total > limit:
+    per_person = float(budget_max)
+    trip_cap = _trip_budget_cap(requirement, per_person)
+    if total > trip_cap:
+        party = _party_size(requirement)
         return (
-            f"⚠️ 预算警告：估算总计 {total:.0f} 元超出您设定的上限 {limit:.0f} 元，"
+            f"⚠️ 预算警告：估算全员总计 {total:.0f} 元超出您设定的人均 {per_person:.0f} 元"
+            f"（{party} 人合计上限 {trip_cap:.0f} 元），"
             "建议调整住宿标准或减少付费景点。"
         )
     return None
@@ -181,16 +195,22 @@ async def build_itinerary(state: TravelState) -> dict:
     budget: dict
     message: str
 
-    if state.get("consumed_revision_note"):
-        itinerary, budget, message = _fallback_itinerary(state)
-        message = f"已按您的修订意见重新生成行程。\n\n{message}"
-    elif settings.mimo_api_key and ctx.ready:
+    revision_note = state.get("consumed_revision_note")
+    build_instruction = _BUILD_INSTRUCTION
+    if revision_note:
+        build_instruction = (
+            f"{_BUILD_INSTRUCTION}\n\n"
+            f"【修订要求】用户希望调整：{revision_note}。"
+            "请在保留合理部分的前提下按此修改，并说明主要变更点。"
+        )
+
+    if settings.mimo_api_key and ctx.ready:
         try:
             raw_text = await invoke_step_llm(
                 "build_itinerary",
                 state,
                 instruction=build_step_instruction(
-                    "build_itinerary", state, _BUILD_INSTRUCTION
+                    "build_itinerary", state, build_instruction
                 ),
                 ctx=ctx,
             )
@@ -224,6 +244,9 @@ async def build_itinerary(state: TravelState) -> dict:
     if warning:
         message = f"{message}\n\n{warning}"
         report = warning if not report else f"{report}\n{warning}"
+
+    if revision_note:
+        message = f"已按您的修订意见重新生成行程。\n\n{message}"
 
     return {
         "current_step": "approval_node",

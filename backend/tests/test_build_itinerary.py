@@ -67,8 +67,34 @@ def test_budget_warning_within_limit() -> None:
     assert budget_warning(state, {"total": 5000}) is None
 
 
+def test_budget_warning_per_person_party_cap() -> None:
+    """2 人每人 2000 元，总计 3000 不应误报超支。"""
+    state = {
+        "user_requirement": {
+            "budget_max": 2000,
+            "adult_count": 2,
+            "children_count": 0,
+        }
+    }
+    assert budget_warning(state, {"total": 3000}) is None
+
+
+def test_budget_warning_per_person_party_over() -> None:
+    state = {
+        "user_requirement": {
+            "budget_max": 2000,
+            "adult_count": 2,
+            "children_count": 1,
+        }
+    }
+    warning = budget_warning(state, {"total": 8000})
+    assert warning is not None
+    assert "6000" in warning
+
+
 @pytest.mark.asyncio
-async def test_build_itinerary_skips_llm_after_revision() -> None:
+async def test_build_itinerary_revision_acknowledges_note(monkeypatch) -> None:
+    monkeypatch.setattr("app.graph.nodes.build_itinerary.settings.mimo_api_key", None)
     state = {
         "user_requirement": {
             "travel_days": 3,
