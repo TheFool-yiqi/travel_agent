@@ -14,6 +14,8 @@ FORBIDDEN_CONTEXT_KEYS = frozenset(
         "prompt",
         "assembled_context",
         "raw_messages",
+        "retrieval_trace",
+        "evidence_context",
     },
 )
 
@@ -50,6 +52,7 @@ V1_CONTEXT_SPECS: dict[str, ContextSpec] = {
                 "planning_need_summary",
                 "preferences",
                 "constraints",
+                "evidence_cards",
             },
         ),
     ),

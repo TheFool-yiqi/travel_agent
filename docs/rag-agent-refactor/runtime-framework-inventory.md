@@ -4,7 +4,7 @@
 门禁。它是迁移事实清单，不是目标目录草图，也不是立即删除旧文件的授权。
 
 ```text
-Inventory scope: Slice 1 / Slice 2 / Slice 3
+Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4
 Last verified date: 2026-06-09
 Runtime status values: active / compatibility / reserved / candidate_redundant
 ```
@@ -19,9 +19,9 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/__init__.py` | Runtime package boundary | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/manifest.py` | Frozen V1 stage names and validation | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/state.py` | Runtime-owned structured execution state, collect/planning/base context helpers | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/state.py` | Runtime-owned structured execution state, collect/planning/base/evidence context helpers | Slice 1 / Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/events.py` | Internal RuntimeEvent contract and transport-neutral event factories | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher, collect waiting pause, RuntimeEvent producer | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher, collect waiting pause, evidence state merge, RuntimeEvent producer | Slice 1 / Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
 
 ### Runtime Stages
 
@@ -31,7 +31,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/stages/base.py` | StageHandler contract, StageResult, skeleton registry | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/collect.py` | Collect stage facade over `CollectRuntime.process_turn()` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/prepare_base_context.py` | BaseContext builder from validated `PlanningNeed` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/stages/retrieve_evidence.py` | Evidence retrieval stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/stages/retrieve_evidence.py` | EvidenceEngine retrieval stage; writes `evidence_context` and `sufficiency_result` | Slice 1 / Slice 4 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/tool_enrich.py` | Tool enrichment stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/domain_plan.py` | Domain planning stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/integrate.py` | Itinerary integration stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
@@ -57,8 +57,8 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/context/__init__.py` | Context package boundary | Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/context/schemas.py` | `BaseContext` schema | Slice 3 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/context/specs.py` | `ContextSpec` registry and visibility policy | Slice 3 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/context/assembler.py` | `ContextAssembler` agent view builder | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/specs.py` | `ContextSpec` registry and visibility policy including evidence card summaries | Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/assembler.py` | `ContextAssembler` agent view builder with evidence card summaries | Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/context/builder.py` | `BaseContext` builder from `PlanningNeed` | Slice 3 | active | — | — | 2026-06-09 |
 
 ### Runtime Semantic
@@ -98,6 +98,22 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/runtime/test_context_assembler.py` | ContextSpec / ContextAssembler visibility tests | Slice 3 | active | — | — | 2026-06-09 |
 | `backend/tests/runtime/test_prepare_base_context_stage.py` | Prepare-base-context stage tests | Slice 3 | active | — | — | 2026-06-09 |
 | `backend/tests/runtime/test_collect_context_smoke.py` | Slice 3 multi-turn collect and base-context smoke tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_evidence_schemas.py` | EvidenceCard / EvidenceContext / SufficiencyResult schema tests | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_evidence_engine.py` | QueryAnalyzer, EvidenceEngine, SufficiencyEvaluator and repository tests | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_retrieve_evidence_stage.py` | Retrieve-evidence stage handler tests | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_evidence_context_smoke.py` | Slice 4 collect → prepare → retrieve integration smoke tests | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/tests/fixtures/evidence/approved_chengdu_cards.json` | Approved/pending Chengdu EvidenceCard fixture for V1 retrieval tests | Slice 4 | active | — | — | 2026-06-09 |
+
+### Runtime Knowledge (EvidenceEngine)
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/knowledge/evidence_schemas.py` | EvidenceCard, EvidenceContext, SufficiencyResult runtime schemas | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/knowledge/tokenizers.py` | `ChineseTokenizer` protocol and `JiebaTokenizer` adapter | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/knowledge/evidence_repository.py` | `FixtureEvidenceRepository` and `PostgresEvidenceRepository` stub | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/knowledge/query_analyzer.py` | `build_retrieval_query()` from `PlanningNeed` and `BaseContext` | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/knowledge/evidence_engine.py` | Approved-card filter, BM25 + vector stub + RRF retrieval | Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/knowledge/evidence_sufficiency.py` | Sufficiency evaluation with `mark_assumptions_and_continue` | Slice 4 | active | — | — | 2026-06-09 |
 
 ## Reused Existing Files
 
@@ -118,6 +134,9 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/graph/semantic/normalizer.py` | Existing text normalization rules | Reused by Slice 3 through runtime adapters | compatibility | `backend/app/runtime/semantic/normalizer.py` | Runtime semantic layer owns behavior and old graph semantic path retires | 2026-06-09 |
 | `backend/app/graph/semantic/slot_tracker.py` | Existing slot binding rules | Reused by Slice 3 through runtime adapters | compatibility | `backend/app/runtime/semantic/slot_binding.py` | Runtime semantic layer owns behavior and old graph semantic path retires | 2026-06-09 |
 | `backend/app/graph/greeting.py` | Existing greeting-only detection and reply templates | Reused by Slice 3 collect greeting policy | compatibility | `backend/app/runtime/collect/greeting.py` | Runtime collect owns greeting behavior and old graph path retires | 2026-06-09 |
+| `backend/app/knowledge/rag_service.py` | Existing chunk-oriented RAG service for old graph nodes | Existing old flow | compatibility | `backend/app/knowledge/evidence_engine.py` | Runtime retrieve_evidence is default path and old graph RAG nodes retire | 2026-06-09 |
+| `backend/app/knowledge/rag_pipeline.py` | Existing chunk retrieval pipeline backing old RAG service | Existing old flow | compatibility | `backend/app/knowledge/evidence_engine.py` | Runtime retrieve_evidence is default path and old graph RAG nodes retire | 2026-06-09 |
+| `backend/app/knowledge/hybrid_retriever.py` | Existing chunk hybrid retriever (Chroma + BM25 + RRF reference) | RRF pattern reference for Slice 4 | compatibility | `backend/app/knowledge/evidence_engine.py` | EvidenceEngine owns card retrieval and old chunk path retires | 2026-06-09 |
 
 ## Compatibility-Only Old Flow Files
 
@@ -156,7 +175,6 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/finalization/` | Final response, order and finalization schemas | Slice 8 | absent | Approved approval/finalization implementation plan | 2026-06-09 |
 | `backend/app/runtime/observability/` | Runtime trace recorder and optional LangSmith adapter | Later approved Slice | absent | Approved observability implementation plan | 2026-06-09 |
 | `backend/app/ai/prompts/runtime/` | Runtime Agent and Skill prompt files | First real Agent/Skill Slice | absent | Approved prompt owner and input schema | 2026-06-09 |
-| `backend/app/knowledge/tokenizers.py` | ChineseTokenizer boundary and Jieba adapter | Slice 4 | absent | Approved EvidenceEngine implementation plan | 2026-06-09 |
 
 ## Candidate Redundant Files
 
@@ -166,10 +184,10 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 ```text
 PlanningRuntime 尚未成为默认 chat path
-retrieve_evidence 及后续 stage 仍为 skeleton
+tool_enrich 及后续 stage 仍为 skeleton
 checkpoint / interrupt / resume 尚未接入 Runtime executor
 finalize、持久化和前端 RuntimeEvent 切换尚未实现
-Slice 3 已完成 collect / prepare_base_context / ContextAssembler，但不构成旧 graph 删除条件
+Slice 4 已完成 retrieve_evidence / EvidenceEngine，但不构成旧 graph 删除条件
 ```
 
 旧流程文件只能保持 `compatibility` 状态。后续将文件标记为 `candidate_redundant` 时，
