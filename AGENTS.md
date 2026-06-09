@@ -46,6 +46,19 @@
 - 禁止将 `.env`、`frontend/.env` 中的真实 API Key 写入代码或文档
 - 只更新 `.env.example` 中的占位符
 
+### 2.4 范式升级执行门禁（NON-NEGOTIABLE）
+
+进行新框架、PlanningRuntime 或其他范式升级时，必须遵守：
+
+- **没有文档依据，不新增模块**：新增模块必须能对应到已确认的蓝图、路线图或当前 Slice 实施计划
+- **没有测试，不声称完成**：未运行对应验收测试，或测试未通过时，只能报告当前进度和风险，不得声明任务已完成
+- **没有用户确认，不改 API / DB / 顶层目录**：涉及 API 契约、数据库模型或迁移、仓库顶层目录的修改必须先暂停并确认
+- **没有进入对应 Slice，不创建后续目录**：只创建当前 Slice 明确要求的目录和文件，不提前搭建后续模块空壳
+- **不把旧 graph node 直接搬进 Runtime stage**：旧实现只能作为行为参考或复用来源，新业务逻辑必须遵守 Runtime 模块边界
+- **不让 AI 自己扩大范围**：只执行当前用户确认的 Task / Slice；发现额外工作时先说明原因、影响和建议，等待确认后再执行
+
+这些规则是实施门禁，不是建议。与普通实施顺序或便利性冲突时，以本节为准。
+
 ---
 
 ## 3. 目录结构（不得随意增删顶层）
@@ -207,6 +220,7 @@ collect_requirements → plan_destination → plan_transport
 
 - 框架：`pytest` + `pytest-asyncio`
 - 目录：`backend/tests/{unit,integration,e2e}/`
+- 执行：统一使用 `uv run pytest ...`，禁止直接调用全局环境中的裸 `pytest`
 - **仅在用户要求或修复 bug 时添加测试**，不主动为占位代码写无意义测试
 
 ---
@@ -271,4 +285,4 @@ collect_requirements → plan_destination → plan_transport
 
 ---
 
-**Version**: 1.0.0 | **Last Updated**: 2026-05-29
+**Version**: 1.0.1 | **Last Updated**: 2026-06-06
