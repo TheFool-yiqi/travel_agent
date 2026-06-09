@@ -61,6 +61,13 @@ class ContextAssembler:
                     evidence_context,
                 )
 
+        if "weather_summary" in spec.allowed_sections:
+            tool_context = state.get("tool_context")
+            if tool_context is not None:
+                agent_context["weather_summary"] = _build_weather_summary_view(
+                    tool_context,
+                )
+
         self._validate_agent_context(agent_context, spec)
         return agent_context
 
@@ -126,6 +133,27 @@ def _build_evidence_cards_view(evidence_context: dict[str, Any]) -> dict[str, An
     return {
         "card_ids": list(evidence_context.get("card_ids") or []),
         "cards": cards,
+    }
+
+
+_WEATHER_SUMMARY_FIELDS = (
+    "status",
+    "destination",
+    "date_range",
+    "summary",
+    "risks",
+)
+
+
+def _build_weather_summary_view(tool_context: dict[str, Any]) -> dict[str, Any]:
+    """Expose trimmed weather for planners; not raw markdown or tool warnings."""
+    weather = tool_context.get("weather")
+    if not isinstance(weather, dict):
+        return {"status": "unavailable"}
+    return {
+        field: weather[field]
+        for field in _WEATHER_SUMMARY_FIELDS
+        if field in weather
     }
 
 

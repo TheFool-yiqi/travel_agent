@@ -12,6 +12,7 @@ from app.runtime.state import (
     set_evidence_context,
     set_planning_need,
     set_sufficiency_result,
+    set_tool_context,
 )
 
 
@@ -64,6 +65,22 @@ def test_create_initial_runtime_state_has_no_prompt_context() -> None:
     assert state.get("collect_turn_count") == 0
     assert state.get("evidence_context") is None
     assert state.get("sufficiency_result") is None
+    assert state.get("tool_context") is None
+
+
+def test_set_tool_context_returns_copy() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都",
+    )
+    tool_context = {"weather": {"status": "available", "summary": "多云"}}
+
+    updated = set_tool_context(state, tool_context)
+    tool_context["weather"]["summary"] = "晴"
+
+    assert updated["tool_context"] == {"weather": {"status": "available", "summary": "多云"}}
+    assert state.get("tool_context") is None
 
 
 def test_set_evidence_context_and_sufficiency_result_return_copies() -> None:

@@ -25,6 +25,7 @@ from app.runtime.state import (
     set_evidence_context,
     set_planning_need,
     set_sufficiency_result,
+    set_tool_context,
 )
 
 
@@ -100,6 +101,8 @@ def _apply_stage_state_updates(
         updated = set_evidence_context(updated, data["evidence_context"])
     if data.get("sufficiency_result") is not None:
         updated = set_sufficiency_result(updated, data["sufficiency_result"])
+    if data.get("tool_context") is not None:
+        updated = set_tool_context(updated, data["tool_context"])
     return updated
 
 

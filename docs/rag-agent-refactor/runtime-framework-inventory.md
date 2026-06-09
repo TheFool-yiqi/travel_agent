@@ -4,7 +4,7 @@
 门禁。它是迁移事实清单，不是目标目录草图，也不是立即删除旧文件的授权。
 
 ```text
-Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4
+Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4 / Slice 5
 Last verified date: 2026-06-09
 Runtime status values: active / compatibility / reserved / candidate_redundant
 ```
@@ -19,9 +19,9 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/__init__.py` | Runtime package boundary | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/manifest.py` | Frozen V1 stage names and validation | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/state.py` | Runtime-owned structured execution state, collect/planning/base/evidence context helpers | Slice 1 / Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/state.py` | Runtime-owned structured execution state, collect/planning/base/evidence/tool context helpers | Slice 1 / Slice 3 / Slice 4 / Slice 5 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/events.py` | Internal RuntimeEvent contract and transport-neutral event factories | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher, collect waiting pause, evidence state merge, RuntimeEvent producer | Slice 1 / Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher, collect waiting pause, evidence/tool state merge, RuntimeEvent producer | Slice 1 / Slice 3 / Slice 4 / Slice 5 | active | — | — | 2026-06-09 |
 
 ### Runtime Stages
 
@@ -32,7 +32,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/stages/collect.py` | Collect stage facade over `CollectRuntime.process_turn()` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/prepare_base_context.py` | BaseContext builder from validated `PlanningNeed` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/retrieve_evidence.py` | EvidenceEngine retrieval stage; writes `evidence_context` and `sufficiency_result` | Slice 1 / Slice 4 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/stages/tool_enrich.py` | Tool enrichment stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/stages/tool_enrich.py` | ToolService weather enrichment stage; writes `tool_context` | Slice 1 / Slice 5 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/domain_plan.py` | Domain planning stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/integrate.py` | Itinerary integration stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/verify.py` | Quality verification stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
@@ -57,8 +57,8 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/context/__init__.py` | Context package boundary | Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/context/schemas.py` | `BaseContext` schema | Slice 3 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/context/specs.py` | `ContextSpec` registry and visibility policy including evidence card summaries | Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/context/assembler.py` | `ContextAssembler` agent view builder with evidence card summaries | Slice 3 / Slice 4 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/specs.py` | `ContextSpec` registry and visibility policy including evidence and weather summaries | Slice 3 / Slice 4 / Slice 5 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/assembler.py` | `ContextAssembler` agent view builder with evidence and weather summaries | Slice 3 / Slice 4 / Slice 5 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/context/builder.py` | `BaseContext` builder from `PlanningNeed` | Slice 3 | active | — | — | 2026-06-09 |
 
 ### Runtime Semantic
@@ -115,6 +115,20 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/knowledge/evidence_engine.py` | Approved-card filter, BM25 + vector stub + RRF retrieval | Slice 4 | active | — | — | 2026-06-09 |
 | `backend/app/knowledge/evidence_sufficiency.py` | Sufficiency evaluation with `mark_assumptions_and_continue` | Slice 4 | active | — | — | 2026-06-09 |
 
+### Runtime Tools (ToolService)
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/tools/__init__.py` | Runtime tools package boundary | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/tools/schemas.py` | `ToolContext`, `WeatherContext`, `ToolWarning` schemas | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/tools/allowlist.py` | V1 tool allowlist registry | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/tools/weather_adapter.py` | Weather markdown trim adapter over existing weather stack | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/tools/service.py` | `ToolService.enrich()` orchestrator | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_tool_schemas.py` | ToolContext schema tests | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_tool_service.py` | ToolService / allowlist / weather adapter tests | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_tool_enrich_stage.py` | Tool-enrich stage handler tests | Slice 5 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_tool_context_smoke.py` | Slice 5 collect → tool_enrich integration smoke tests | Slice 5 | active | — | — | 2026-06-09 |
+
 ## Reused Existing Files
 
 这些文件仍由现有系统拥有。Slice 1/2 只复用其能力、接口经验或回归测试，不迁移其
@@ -137,6 +151,8 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/knowledge/rag_service.py` | Existing chunk-oriented RAG service for old graph nodes | Existing old flow | compatibility | `backend/app/knowledge/evidence_engine.py` | Runtime retrieve_evidence is default path and old graph RAG nodes retire | 2026-06-09 |
 | `backend/app/knowledge/rag_pipeline.py` | Existing chunk retrieval pipeline backing old RAG service | Existing old flow | compatibility | `backend/app/knowledge/evidence_engine.py` | Runtime retrieve_evidence is default path and old graph RAG nodes retire | 2026-06-09 |
 | `backend/app/knowledge/hybrid_retriever.py` | Existing chunk hybrid retriever (Chroma + BM25 + RRF reference) | RRF pattern reference for Slice 4 | compatibility | `backend/app/knowledge/evidence_engine.py` | EvidenceEngine owns card retrieval and old chunk path retires | 2026-06-09 |
+| `backend/app/tools/weather.py` | Existing LangChain weather tool entry | Reused by Slice 5 through WeatherToolAdapter | compatibility | `backend/app/runtime/tools/weather_adapter.py` | Runtime tool_enrich is default path and old graph weather path retires | 2026-06-09 |
+| `backend/app/mcp/adapters/weather_adapter.py` | Existing QWeather / MCP weather adapter | Reused by Slice 5 through tools/weather.py | compatibility | `backend/app/runtime/tools/weather_adapter.py` | Runtime tool_enrich is default path | 2026-06-09 |
 
 ## Compatibility-Only Old Flow Files
 
@@ -170,7 +186,6 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/discovery/` | Destination discovery catalog helpers | Slice 4+ | absent | Approved discovery implementation plan | 2026-06-09 |
 | `backend/app/runtime/agents/` | Runtime-owned Agent roles | Slice 6 | absent | Approved multi-agent implementation plan | 2026-06-09 |
 | `backend/app/runtime/skills/` | Explicit Skill packages and registry | Slice 3+ | absent | First real Skill implementation plan | 2026-06-09 |
-| `backend/app/runtime/tools/` | ToolService and Runtime tool adapters | Slice 5 | absent | Approved ToolService implementation plan | 2026-06-09 |
 | `backend/app/runtime/quality/` | QualityVerifier and quality schemas | Slice 7 | absent | Approved quality/revision implementation plan | 2026-06-09 |
 | `backend/app/runtime/finalization/` | Final response, order and finalization schemas | Slice 8 | absent | Approved approval/finalization implementation plan | 2026-06-09 |
 | `backend/app/runtime/observability/` | Runtime trace recorder and optional LangSmith adapter | Later approved Slice | absent | Approved observability implementation plan | 2026-06-09 |
@@ -184,10 +199,10 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 ```text
 PlanningRuntime 尚未成为默认 chat path
-tool_enrich 及后续 stage 仍为 skeleton
+domain_plan 及后续 stage 仍为 skeleton
 checkpoint / interrupt / resume 尚未接入 Runtime executor
 finalize、持久化和前端 RuntimeEvent 切换尚未实现
-Slice 4 已完成 retrieve_evidence / EvidenceEngine，但不构成旧 graph 删除条件
+Slice 5 已完成 tool_enrich / ToolService / WeatherTool，但不构成旧 graph 删除条件
 ```
 
 旧流程文件只能保持 `compatibility` 状态。后续将文件标记为 `candidate_redundant` 时，
