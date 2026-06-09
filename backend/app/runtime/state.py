@@ -25,6 +25,8 @@ class RuntimeState(TypedDict, total=False):
     base_context: dict[str, Any] | None
     awaiting_user: bool
     collect_turn_count: int
+    evidence_context: dict[str, Any] | None
+    sufficiency_result: dict[str, Any] | None
 
 
 def create_initial_runtime_state(
@@ -52,6 +54,8 @@ def create_initial_runtime_state(
         base_context=None,
         awaiting_user=False,
         collect_turn_count=0,
+        evidence_context=None,
+        sufficiency_result=None,
     )
 
 
@@ -132,6 +136,26 @@ def record_collect_waiting(state: RuntimeState) -> RuntimeState:
     """Return a state copy that pauses the runtime until the next user turn."""
     updated = dict(state)
     updated["awaiting_user"] = True
+    return RuntimeState(**updated)
+
+
+def set_evidence_context(
+    state: RuntimeState,
+    evidence_context: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with retrieved evidence context."""
+    updated = dict(state)
+    updated["evidence_context"] = _copy_optional_dict(evidence_context)
+    return RuntimeState(**updated)
+
+
+def set_sufficiency_result(
+    state: RuntimeState,
+    sufficiency_result: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with evidence sufficiency evaluation."""
+    updated = dict(state)
+    updated["sufficiency_result"] = _copy_optional_dict(sufficiency_result)
     return RuntimeState(**updated)
 
 

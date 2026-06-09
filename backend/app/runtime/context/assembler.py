@@ -54,6 +54,13 @@ class ContextAssembler:
         if "constraints" in spec.allowed_sections and planning_need is not None:
             agent_context["constraints"] = list(planning_need.constraints)
 
+        if "evidence_cards" in spec.allowed_sections:
+            evidence_context = state.get("evidence_context")
+            if evidence_context is not None:
+                agent_context["evidence_cards"] = _build_evidence_cards_view(
+                    evidence_context,
+                )
+
         self._validate_agent_context(agent_context, spec)
         return agent_context
 
@@ -89,6 +96,37 @@ def _load_base_context(state: RuntimeState) -> BaseContext | None:
     if not raw:
         return None
     return BaseContext.from_runtime_dict(raw)
+
+
+_EVIDENCE_CARD_SUMMARY_FIELDS = (
+    "id",
+    "claim",
+    "evidence_type",
+    "city",
+    "entities",
+    "applies_to",
+    "time_hint",
+    "intensity",
+)
+
+
+def _build_evidence_cards_view(evidence_context: dict[str, Any]) -> dict[str, Any]:
+    """Expose card ids and claim summaries without raw retrieval traces."""
+    cards: list[dict[str, Any]] = []
+    for card in evidence_context.get("cards") or []:
+        if not isinstance(card, dict):
+            continue
+        cards.append(
+            {
+                field: card[field]
+                for field in _EVIDENCE_CARD_SUMMARY_FIELDS
+                if field in card
+            },
+        )
+    return {
+        "card_ids": list(evidence_context.get("card_ids") or []),
+        "cards": cards,
+    }
 
 
 def _assert_no_prompt_keys(value: Any, *, path: str = "") -> None:
