@@ -1,0 +1,60 @@
+[
+  {
+    "id": "card_chengdu_route_1",
+    "claim": "武侯祠和锦里距离较近，适合组合为半日文化游路线",
+    "evidence_type": "route_relation",
+    "city": "成都",
+    "entities": ["武侯祠", "锦里"],
+    "applies_to": ["第一次到访", "历史文化", "低强度"],
+    "time_hint": "半日",
+    "intensity": "低",
+    "confidence": 0.92,
+    "status": "approved",
+    "embedding_text": "城市：成都 证据类型：路线组合 武侯祠 锦里 半日 低强度 文化游",
+    "source_document_id": "doc_chengdu_guide",
+    "source_chunk_id": "chunk_parent_1"
+  },
+  {
+    "id": "card_chengdu_food_1",
+    "claim": "奎星楼街和玉林路适合美食探索",
+    "evidence_type": "food_option",
+    "city": "成都",
+    "entities": ["奎星楼街", "玉林路"],
+    "applies_to": ["美食", "夜宵"],
+    "time_hint": "晚间",
+    "intensity": "低",
+    "confidence": 0.88,
+    "status": "approved",
+    "embedding_text": "城市：成都 美食 奎星楼街 玉林路 美食探索",
+    "source_document_id": "doc_chengdu_guide",
+    "source_chunk_id": "chunk_parent_2"
+  },
+  {
+    "id": "card_chengdu_panda_1",
+    "claim": "熊猫基地建议安排半天，上午入园体验更好",
+    "evidence_type": "time_intensity",
+    "city": "成都",
+    "entities": ["熊猫基地"],
+    "applies_to": ["亲子", "低强度", "第一次到访"],
+    "time_hint": "半日",
+    "intensity": "低",
+    "confidence": 0.9,
+    "status": "approved",
+    "embedding_text": "城市：成都 熊猫基地 半日 上午 低强度",
+    "source_document_id": "doc_chengdu_guide",
+    "source_chunk_id": "chunk_parent_3"
+  },
+  {
+    "id": "card_chengdu_pending",
+    "claim": "不应进入线上检索",
+    "evidence_type": "area_strategy",
+    "city": "成都",
+    "entities": [],
+    "applies_to": [],
+    "confidence": 0.5,
+    "status": "pending_review",
+    "embedding_text": "pending card",
+    "source_document_id": "doc_chengdu_guide",
+    "source_chunk_id": "chunk_parent_4"
+  }
+]
