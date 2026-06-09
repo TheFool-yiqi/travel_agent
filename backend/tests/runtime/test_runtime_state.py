@@ -9,7 +9,9 @@ from app.runtime.state import (
     record_stage_output,
     set_base_context,
     set_collect_context,
+    set_evidence_context,
     set_planning_need,
+    set_sufficiency_result,
 )
 
 
@@ -60,6 +62,28 @@ def test_create_initial_runtime_state_has_no_prompt_context() -> None:
     assert state.get("base_context") is None
     assert state.get("awaiting_user") is False
     assert state.get("collect_turn_count") == 0
+    assert state.get("evidence_context") is None
+    assert state.get("sufficiency_result") is None
+
+
+def test_set_evidence_context_and_sufficiency_result_return_copies() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都",
+    )
+    evidence_context = {"card_ids": ["card_1"], "cards": []}
+    sufficiency_result = {"is_sufficient": False, "score": 0.5}
+
+    updated = set_sufficiency_result(
+        set_evidence_context(state, evidence_context),
+        sufficiency_result,
+    )
+    evidence_context["card_ids"].append("card_2")
+
+    assert updated["evidence_context"] == {"card_ids": ["card_1"], "cards": []}
+    assert updated["sufficiency_result"] == sufficiency_result
+    assert state.get("evidence_context") is None
 
 
 def test_set_collect_context_returns_copy() -> None:

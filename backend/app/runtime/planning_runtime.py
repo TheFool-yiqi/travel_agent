@@ -22,7 +22,9 @@ from app.runtime.state import (
     record_stage_output,
     set_base_context,
     set_collect_context,
+    set_evidence_context,
     set_planning_need,
+    set_sufficiency_result,
 )
 
 
@@ -94,6 +96,10 @@ def _apply_stage_state_updates(
         updated = set_planning_need(updated, data["planning_need"])
     if data.get("base_context") is not None:
         updated = set_base_context(updated, data["base_context"])
+    if data.get("evidence_context") is not None:
+        updated = set_evidence_context(updated, data["evidence_context"])
+    if data.get("sufficiency_result") is not None:
+        updated = set_sufficiency_result(updated, data["sufficiency_result"])
     return updated
 
 
