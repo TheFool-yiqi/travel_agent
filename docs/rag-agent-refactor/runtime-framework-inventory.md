@@ -4,8 +4,8 @@
 门禁。它是迁移事实清单，不是目标目录草图，也不是立即删除旧文件的授权。
 
 ```text
-Inventory scope: Slice 1 / Slice 2
-Last verified date: 2026-06-06
+Inventory scope: Slice 1 / Slice 2 / Slice 3
+Last verified date: 2026-06-09
 Runtime status values: active / compatibility / reserved / candidate_redundant
 ```
 
@@ -19,9 +19,9 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/__init__.py` | Runtime package boundary | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/manifest.py` | Frozen V1 stage names and validation | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/state.py` | Runtime-owned structured execution state and update helpers | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/state.py` | Runtime-owned structured execution state, collect/planning/base context helpers | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/events.py` | Internal RuntimeEvent contract and transport-neutral event factories | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher and RuntimeEvent producer | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher, collect waiting pause, RuntimeEvent producer | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 
 ### Runtime Stages
 
@@ -29,8 +29,8 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/stages/__init__.py` | Stage package boundary | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/base.py` | StageHandler contract, StageResult, skeleton registry | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/stages/collect.py` | Collect stage skeleton; real collect behavior enters later Slice | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/stages/prepare_base_context.py` | Base-context stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/stages/collect.py` | Collect stage facade over `CollectRuntime.process_turn()` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/stages/prepare_base_context.py` | BaseContext builder from validated `PlanningNeed` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/retrieve_evidence.py` | Evidence retrieval stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/tool_enrich.py` | Tool enrichment stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/domain_plan.py` | Domain planning stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
@@ -39,13 +39,44 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/stages/approve_or_revise.py` | Approval and revision routing stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/finalize.py` | Finalization stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 
+### Runtime Collect
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/collect/__init__.py` | Collect package boundary | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/collect/schemas.py` | `CollectContext`, `PlanningNeed`, provenance schemas | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/collect/greeting.py` | GreetingPolicy / GreetingResponder | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/collect/readiness.py` | HybridReadinessEvaluator | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/collect/planning_input.py` | PlanningInputCompiler / Validator | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/collect/conversation_policy.py` | Collect reply policy | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/collect/runtime.py` | `CollectRuntime.process_turn()` orchestrator | Slice 3 | active | — | — | 2026-06-09 |
+
+### Runtime Context
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/context/__init__.py` | Context package boundary | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/schemas.py` | `BaseContext` schema | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/specs.py` | `ContextSpec` registry and visibility policy | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/assembler.py` | `ContextAssembler` agent view builder | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/context/builder.py` | `BaseContext` builder from `PlanningNeed` | Slice 3 | active | — | — | 2026-06-09 |
+
+### Runtime Semantic
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/semantic/__init__.py` | Semantic adapter package boundary | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/semantic/normalizer.py` | Text normalization adapter over graph semantic rules | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/semantic/slot_binding.py` | Slot binding adapter over graph semantic rules | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/semantic/collection_frame.py` | `CollectSemanticLayer` semantic frame lifecycle | Slice 3 | active | — | — | 2026-06-09 |
+
 ### Runtime Executor And Stream
 
 | Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/executor/__init__.py` | Runtime executor package boundary | Slice 2 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/executor/graph_builder.py` | Independent 9-stage LangGraph StateGraph builder | Slice 2 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/executor/langgraph_executor.py` | Stable RuntimeEvent stream adapter; checkpointer bridge reserved | Slice 2 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/executor/langgraph_executor.py` | Stable RuntimeEvent stream adapter; optional handler injection | Slice 2 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/services/runtime_chat_stream.py` | RuntimeEvent and single public-token stream multiplexer | Slice 2 | active | — | — | 2026-06-06 |
 
 ### Runtime Tests
@@ -55,11 +86,18 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/runtime/__init__.py` | Runtime test package boundary | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/tests/runtime/test_runtime_state.py` | Manifest and RuntimeState contract tests | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/tests/runtime/test_runtime_events.py` | RuntimeEvent contract tests | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/tests/runtime/test_stage_skeleton.py` | Nine-stage handler skeleton tests | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/tests/runtime/test_planning_runtime.py` | Sequential dispatcher and failure behavior tests | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/tests/runtime/test_stage_skeleton.py` | Stage handler contract tests including collect/prepare behavior | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_planning_runtime.py` | Sequential dispatcher, collect waiting pause, failure behavior | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/tests/runtime/test_runtime_graph_builder.py` | Runtime StateGraph and executor adapter tests | Slice 2 | active | — | — | 2026-06-06 |
 | `backend/tests/runtime/test_runtime_chat_stream.py` | RuntimeEvent/token multiplexer tests | Slice 2 | active | — | — | 2026-06-06 |
-| `backend/tests/runtime/test_runtime_skeleton_smoke.py` | Slice 1/2 end-to-end RuntimeEvent smoke test | Slice 2 | active | — | — | 2026-06-06 |
+| `backend/tests/runtime/test_runtime_skeleton_smoke.py` | Slice 1/2 end-to-end RuntimeEvent smoke test with collect stub | Slice 2 / Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_collect_context.py` | CollectContext / PlanningNeed / BaseContext round-trip tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_collect_stage.py` | Greeting, readiness and CollectRuntime tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_planning_input.py` | PlanningNeed compilation tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_semantic_layer.py` | Runtime semantic adapter tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_context_assembler.py` | ContextSpec / ContextAssembler visibility tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_prepare_base_context_stage.py` | Prepare-base-context stage tests | Slice 3 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_collect_context_smoke.py` | Slice 3 multi-turn collect and base-context smoke tests | Slice 3 | active | — | — | 2026-06-09 |
 
 ## Reused Existing Files
 
@@ -74,6 +112,12 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/test_chat_stream.py` | Existing streaming compatibility tests | Slice 2 regression verification | compatibility | Runtime stream tests cover only new multiplexer behavior | Old stream path retired and equivalent persistence/transport tests exist | 2026-06-06 |
 | `backend/tests/test_checkpoint.py` | Existing checkpoint compatibility tests | Slice 2 regression verification | compatibility | Future Runtime checkpoint tests | Runtime checkpoint/interrupt/resume tests provide equivalent coverage | 2026-06-06 |
 | `backend/tests/test_approval_router.py` | Existing approval routing compatibility tests | Slice 2 regression verification | compatibility | Future `approve_or_revise` integration tests | Real Runtime approval/revision behavior is implemented and equivalent coverage exists | 2026-06-06 |
+| `backend/tests/test_context_flow_fixes.py` | Stream extra_info merge regression tests | Reused by Slice 3 verification | compatibility | Runtime stream adapter tests | Old stream path retired with equivalent coverage | 2026-06-09 |
+| `backend/tests/test_nl_extract_selection.py` | NL selection rule tests referenced by semantic migration | Reused by Slice 3 verification | compatibility | Runtime semantic/collect tests | Old graph retired with equivalent coverage | 2026-06-09 |
+| `backend/app/graph/semantic/semantic_pipeline.py` | Existing semantic frame pipeline | Reused by Slice 3 through runtime adapters | compatibility | `backend/app/runtime/semantic/collection_frame.py` | Runtime semantic layer owns behavior and old graph semantic path retires | 2026-06-09 |
+| `backend/app/graph/semantic/normalizer.py` | Existing text normalization rules | Reused by Slice 3 through runtime adapters | compatibility | `backend/app/runtime/semantic/normalizer.py` | Runtime semantic layer owns behavior and old graph semantic path retires | 2026-06-09 |
+| `backend/app/graph/semantic/slot_tracker.py` | Existing slot binding rules | Reused by Slice 3 through runtime adapters | compatibility | `backend/app/runtime/semantic/slot_binding.py` | Runtime semantic layer owns behavior and old graph semantic path retires | 2026-06-09 |
+| `backend/app/graph/greeting.py` | Existing greeting-only detection and reply templates | Reused by Slice 3 collect greeting policy | compatibility | `backend/app/runtime/collect/greeting.py` | Runtime collect owns greeting behavior and old graph path retires | 2026-06-09 |
 
 ## Compatibility-Only Old Flow Files
 
@@ -84,7 +128,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|-------------------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/graph/builder.py` | Builds the existing travel graph | Existing old flow | compatibility | `backend/app/runtime/executor/graph_builder.py` | Runtime becomes default path; checkpoint, streaming, approval and finalization parity verified | 2026-06-06 |
 | `backend/app/graph/state.py` | Existing graph `TravelState` | Existing old flow | compatibility | `backend/app/runtime/state.py` for new flow only | Old graph retired and no active API/service depends on TravelState | 2026-06-06 |
-| `backend/app/graph/nodes/collect_requirements.py` | Existing multi-turn requirement collection node | Existing old flow | compatibility | `backend/app/runtime/stages/collect.py` plus future collect/context modules | Real Runtime collect Slice passes multi-turn, greeting and resume regression tests | 2026-06-06 |
+| `backend/app/graph/nodes/collect_requirements.py` | Existing multi-turn requirement collection node | Existing old flow | compatibility | `backend/app/runtime/collect/` plus `backend/app/runtime/stages/collect.py` | Runtime collect is default path and multi-turn/greeting/resume regression coverage is migrated | 2026-06-09 |
 | `backend/app/graph/nodes/plan_destination.py` | Existing destination planning node | Existing old flow | compatibility | `backend/app/runtime/stages/domain_plan.py` plus future domain agents | Real DomainPlannerGroup is implemented and old graph is retired | 2026-06-06 |
 | `backend/app/graph/nodes/plan_transport.py` | Existing transport planning node | Existing old flow | compatibility | Future RouteTransportActivityPlanner through `domain_plan` | Transport constraints and degradation behavior pass Runtime tests | 2026-06-06 |
 | `backend/app/graph/nodes/plan_stay_and_food.py` | Existing stay and food planning node | Existing old flow | compatibility | Future StayFoodPlanner through `domain_plan` | Stay/food proposal and integration behavior pass Runtime tests | 2026-06-06 |
@@ -103,17 +147,16 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 | Planned path | Intended responsibility | Earliest slice | Current existence | Creation gate | Last verified date |
 |--------------|-------------------------|----------------|-------------------|---------------|-------------------|
-| `backend/app/runtime/context/` | ContextAssembler and ContextSpec | Slice 3 | absent | Approved collect/context implementation plan | 2026-06-06 |
-| `backend/app/runtime/memory/` | Runtime memory read boundary | Slice 3 or later | absent | Approved memory implementation plan | 2026-06-06 |
-| `backend/app/runtime/semantic/` | Collect semantic migration | Slice 3 | absent | Approved collect/context implementation plan | 2026-06-06 |
-| `backend/app/runtime/agents/` | Runtime-owned Agent roles | Slice 6 | absent | Approved multi-agent implementation plan | 2026-06-06 |
-| `backend/app/runtime/skills/` | Explicit Skill packages and registry | Slice 3 or later | absent | First real Skill implementation plan | 2026-06-06 |
-| `backend/app/runtime/tools/` | ToolService and Runtime tool adapters | Slice 5 | absent | Approved ToolService implementation plan | 2026-06-06 |
-| `backend/app/runtime/quality/` | QualityVerifier and quality schemas | Slice 7 | absent | Approved quality/revision implementation plan | 2026-06-06 |
-| `backend/app/runtime/finalization/` | Final response, order and finalization schemas | Slice 8 | absent | Approved approval/finalization implementation plan | 2026-06-06 |
-| `backend/app/runtime/observability/` | Runtime trace recorder and optional LangSmith adapter | Later approved Slice | absent | Approved observability implementation plan | 2026-06-06 |
-| `backend/app/ai/prompts/runtime/` | Runtime Agent and Skill prompt files | First real Agent/Skill Slice | absent | Approved prompt owner and input schema | 2026-06-06 |
-| `backend/app/knowledge/tokenizers.py` | ChineseTokenizer boundary and Jieba adapter | Slice 4 | absent | Approved EvidenceEngine implementation plan | 2026-06-06 |
+| `backend/app/runtime/memory/` | Runtime memory read boundary | Slice 3+ | absent | Approved memory implementation plan | 2026-06-09 |
+| `backend/app/runtime/discovery/` | Destination discovery catalog helpers | Slice 4+ | absent | Approved discovery implementation plan | 2026-06-09 |
+| `backend/app/runtime/agents/` | Runtime-owned Agent roles | Slice 6 | absent | Approved multi-agent implementation plan | 2026-06-09 |
+| `backend/app/runtime/skills/` | Explicit Skill packages and registry | Slice 3+ | absent | First real Skill implementation plan | 2026-06-09 |
+| `backend/app/runtime/tools/` | ToolService and Runtime tool adapters | Slice 5 | absent | Approved ToolService implementation plan | 2026-06-09 |
+| `backend/app/runtime/quality/` | QualityVerifier and quality schemas | Slice 7 | absent | Approved quality/revision implementation plan | 2026-06-09 |
+| `backend/app/runtime/finalization/` | Final response, order and finalization schemas | Slice 8 | absent | Approved approval/finalization implementation plan | 2026-06-09 |
+| `backend/app/runtime/observability/` | Runtime trace recorder and optional LangSmith adapter | Later approved Slice | absent | Approved observability implementation plan | 2026-06-09 |
+| `backend/app/ai/prompts/runtime/` | Runtime Agent and Skill prompt files | First real Agent/Skill Slice | absent | Approved prompt owner and input schema | 2026-06-09 |
+| `backend/app/knowledge/tokenizers.py` | ChineseTokenizer boundary and Jieba adapter | Slice 4 | absent | Approved EvidenceEngine implementation plan | 2026-06-09 |
 
 ## Candidate Redundant Files
 
@@ -123,9 +166,10 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 ```text
 PlanningRuntime 尚未成为默认 chat path
-Runtime stages 仍是 skeleton，不具备旧 graph 的真实业务能力
+retrieve_evidence 及后续 stage 仍为 skeleton
 checkpoint / interrupt / resume 尚未接入 Runtime executor
 finalize、持久化和前端 RuntimeEvent 切换尚未实现
+Slice 3 已完成 collect / prepare_base_context / ContextAssembler，但不构成旧 graph 删除条件
 ```
 
 旧流程文件只能保持 `compatibility` 状态。后续将文件标记为 `candidate_redundant` 时，
