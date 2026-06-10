@@ -134,34 +134,17 @@ export async function completeRequirementCollection(page: Page): Promise<void> {
   await sendChatMessage(page, "穷游党");
   await waitForAssistantReply(page, /(整理|对吗|确认|需求|理解)/, 300_000);
   await sendChatMessage(page, "对的");
-  await waitForAssistantReply(page, /(目的地|交通|已确认|规划|北京)/, 300_000);
+  await waitForApprovalReady(page, 600_000);
 }
 
-/** 等待审批横幅出现且流式输出结束（避免匹配活动节点的「开始生成完整行程」过早返回） */
+/** 等待审批横幅出现且流式输出结束 */
 export async function waitForApprovalReady(page: Page, timeout = 600_000): Promise<void> {
   await expect(page.getByRole("region", { name: "行程确认" })).toBeVisible({ timeout });
   await waitForChatReady(page, timeout);
   await expect(page.getByRole("button", { name: "确认行程" })).toBeEnabled({ timeout: 60_000 });
 }
 
-/** build_itinerary 完成信号（不含 plan_activities 的「开始生成完整行程」） */
-const BUILD_COMPLETE = /(Day\s*\d|第\s*\d+\s*天|已生成\s*\d+\s*天|行程与预算已生成|交通.*住宿|估算模式)/;
-
-/** 规划阶段：交通 → 食宿 → 活动 → 等待行程卡片（每步确认后需主动发下一条） */
+/** PlanningRuntime 在 collect 完成后自动跑完整条链路，等待审批横幅即可。 */
 export async function completePlanningToApproval(page: Page): Promise<void> {
-  await sendChatMessage(page, "高铁");
-  await waitForAssistantReply(page, /(交通方式已确认|高铁)/, 300_000);
-
-  await sendChatMessage(page, "经济酒店，本地小吃");
-  await waitForAssistantReply(page, /(住宿|餐饮|活动偏好|接下来)/, 300_000);
-
-  await sendChatMessage(page, "文化体验");
-  try {
-    await waitForAssistantReply(page, BUILD_COMPLETE, 300_000);
-  } catch {
-    // 偶发 stream 无响应：重发活动偏好后再等 build
-    await sendChatMessage(page, "文化体验");
-    await waitForAssistantReply(page, BUILD_COMPLETE, 600_000);
-  }
-  await waitForApprovalReady(page, 120_000);
+  await waitForApprovalReady(page, 600_000);
 }

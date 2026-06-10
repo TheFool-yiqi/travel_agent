@@ -66,12 +66,19 @@ def test_adapt_approve_waiting_emits_approval_required_and_token() -> None:
                     "status": "pending",
                     "public_prompt": "请确认行程草案",
                 },
+                "itinerary_draft": {
+                    "destination": "成都",
+                    "travel_days": 2,
+                    "days": [{"day_number": 1, "theme": "抵达", "activities": []}],
+                    "budget": {"total": 3000},
+                },
                 "public_reply": "请确认行程草案",
             },
         },
     )
     payloads = adapt_runtime_event_to_frontend_events(event)
 
+    assert any(item["type"] == "itinerary" for item in payloads)
     assert {"type": "approval_required", "message": "请确认行程草案"} in payloads
     assert {"type": "token", "content": "请确认行程草案"} in payloads
 
