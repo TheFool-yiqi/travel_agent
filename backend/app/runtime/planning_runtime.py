@@ -26,6 +26,8 @@ from app.runtime.state import (
     set_planning_need,
     set_sufficiency_result,
     set_tool_context,
+    set_plan_proposals,
+    set_itinerary_draft,
 )
 
 
@@ -103,6 +105,10 @@ def _apply_stage_state_updates(
         updated = set_sufficiency_result(updated, data["sufficiency_result"])
     if data.get("tool_context") is not None:
         updated = set_tool_context(updated, data["tool_context"])
+    if data.get("plan_proposals") is not None:
+        updated = set_plan_proposals(updated, data["plan_proposals"])
+    if data.get("itinerary_draft") is not None:
+        updated = set_itinerary_draft(updated, data["itinerary_draft"])
     return updated
 
 

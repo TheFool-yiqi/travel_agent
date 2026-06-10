@@ -4,7 +4,7 @@
 门禁。它是迁移事实清单，不是目标目录草图，也不是立即删除旧文件的授权。
 
 ```text
-Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4 / Slice 5
+Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4 / Slice 5 / Slice 6
 Last verified date: 2026-06-09
 Runtime status values: active / compatibility / reserved / candidate_redundant
 ```
@@ -19,7 +19,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/runtime/__init__.py` | Runtime package boundary | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/manifest.py` | Frozen V1 stage names and validation | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/state.py` | Runtime-owned structured execution state, collect/planning/base/evidence/tool context helpers | Slice 1 / Slice 3 / Slice 4 / Slice 5 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/state.py` | Runtime-owned structured execution state including plan proposals and itinerary draft | Slice 1 / Slice 3 / Slice 4 / Slice 5 / Slice 6 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/events.py` | Internal RuntimeEvent contract and transport-neutral event factories | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/planning_runtime.py` | Sequential stage dispatcher, collect waiting pause, evidence/tool state merge, RuntimeEvent producer | Slice 1 / Slice 3 / Slice 4 / Slice 5 | active | — | — | 2026-06-09 |
 
@@ -33,8 +33,8 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/stages/prepare_base_context.py` | BaseContext builder from validated `PlanningNeed` | Slice 1 / Slice 3 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/retrieve_evidence.py` | EvidenceEngine retrieval stage; writes `evidence_context` and `sufficiency_result` | Slice 1 / Slice 4 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/tool_enrich.py` | ToolService weather enrichment stage; writes `tool_context` | Slice 1 / Slice 5 | active | — | — | 2026-06-09 |
-| `backend/app/runtime/stages/domain_plan.py` | Domain planning stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/stages/integrate.py` | Itinerary integration stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/stages/domain_plan.py` | DomainPlannerGroup stage; writes `plan_proposals` | Slice 1 / Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/stages/integrate.py` | ItineraryIntegrator stage; writes `itinerary_draft` | Slice 1 / Slice 6 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/verify.py` | Quality verification stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/approve_or_revise.py` | Approval and revision routing stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
 | `backend/app/runtime/stages/finalize.py` | Finalization stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
@@ -129,6 +129,24 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/runtime/test_tool_enrich_stage.py` | Tool-enrich stage handler tests | Slice 5 | active | — | — | 2026-06-09 |
 | `backend/tests/runtime/test_tool_context_smoke.py` | Slice 5 collect → tool_enrich integration smoke tests | Slice 5 | active | — | — | 2026-06-09 |
 
+### Runtime Domain Planning
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/planning/__init__.py` | Domain planning package boundary | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning/schemas.py` | `PlanProposal` and `ItineraryDraft` schemas | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning/destination_planner.py` | DestinationPlanner deterministic V1 implementation | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning/route_transport_activity_planner.py` | RouteTransportActivityPlanner V1 implementation | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning/stay_food_planner.py` | StayFoodPlanner V1 implementation | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning/planner_group.py` | DomainPlannerGroup orchestration | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/app/runtime/planning/integrator.py` | ItineraryIntegrator merge logic | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_planning_schemas.py` | PlanProposal / ItineraryDraft schema tests | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_domain_planner_group.py` | DomainPlannerGroup tests | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_itinerary_integrator.py` | ItineraryIntegrator tests | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_domain_plan_stage.py` | Domain-plan stage handler tests | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_integrate_stage.py` | Integrate stage handler tests | Slice 6 | active | — | — | 2026-06-09 |
+| `backend/tests/runtime/test_domain_planning_smoke.py` | Slice 6 end-to-end domain_plan / integrate smoke tests | Slice 6 | active | — | — | 2026-06-09 |
+
 ## Reused Existing Files
 
 这些文件仍由现有系统拥有。Slice 1/2 只复用其能力、接口经验或回归测试，不迁移其
@@ -184,7 +202,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 |--------------|-------------------------|----------------|-------------------|---------------|-------------------|
 | `backend/app/runtime/memory/` | Runtime memory read boundary | Slice 3+ | absent | Approved memory implementation plan | 2026-06-09 |
 | `backend/app/runtime/discovery/` | Destination discovery catalog helpers | Slice 4+ | absent | Approved discovery implementation plan | 2026-06-09 |
-| `backend/app/runtime/agents/` | Runtime-owned Agent roles | Slice 6 | absent | Approved multi-agent implementation plan | 2026-06-09 |
+| `backend/app/runtime/agents/` | Runtime-owned Agent roles | Slice 6+ | absent | Approved LLM agent implementation plan | 2026-06-09 |
 | `backend/app/runtime/skills/` | Explicit Skill packages and registry | Slice 3+ | absent | First real Skill implementation plan | 2026-06-09 |
 | `backend/app/runtime/quality/` | QualityVerifier and quality schemas | Slice 7 | absent | Approved quality/revision implementation plan | 2026-06-09 |
 | `backend/app/runtime/finalization/` | Final response, order and finalization schemas | Slice 8 | absent | Approved approval/finalization implementation plan | 2026-06-09 |
@@ -199,10 +217,10 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 ```text
 PlanningRuntime 尚未成为默认 chat path
-domain_plan 及后续 stage 仍为 skeleton
+verify 及后续 stage 仍为 skeleton
 checkpoint / interrupt / resume 尚未接入 Runtime executor
 finalize、持久化和前端 RuntimeEvent 切换尚未实现
-Slice 5 已完成 tool_enrich / ToolService / WeatherTool，但不构成旧 graph 删除条件
+Slice 6 已完成 domain_plan / integrate / DomainPlannerGroup，但不构成旧 graph 删除条件
 ```
 
 旧流程文件只能保持 `compatibility` 状态。后续将文件标记为 `candidate_redundant` 时，
