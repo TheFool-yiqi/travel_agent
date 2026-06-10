@@ -1,21 +1,23 @@
 # Travel Agent — 技术架构文档
 
-> 最后更新：2026-06-03  
-> 关联文档：[AGENTS.md](../AGENTS.md) | [langgraph_flow.md](langgraph_flow.md) | [api.md](api.md) | [database.md](database.md)
+> 最后更新：2026-06-10  
+> 关联文档：[AGENTS.md](../AGENTS.md) | [langgraph_flow.md](langgraph_flow.md) | [api.md](api.md) | [database.md](database.md) | [rag-agent-refactor/09-planning-runtime-blueprint.md](rag-agent-refactor/09-planning-runtime-blueprint.md)
 
 ---
 
 ## 1. 系统概述
 
-Travel Agent 是一个基于 **LangGraph 状态机** 的智能旅行规划平台。用户通过 Web 界面发起旅行规划会话，系统以多 Agent 协作方式完成目的地、交通、住宿餐饮、活动等分域规划，经人工审批后输出完整行程。
+Travel Agent 是一个智能旅行规划平台。V1 线上主路径已切换为 **PlanningRuntime** 九阶段内核；旧 **LangGraph 状态机** 仍可通过 `CHAT_PLANNER_BACKEND=graph` 作为兼容入口保留。
+
+用户通过 Web 界面发起旅行规划会话，系统以 collect → evidence → domain plan → integrate → verify → approval → finalize 流程产出行程与订单。
 
 ### 1.1 设计目标
 
-- **可编排**：LangGraph 显式建模规划流程与条件分支
-- **可暂停恢复**：通过 checkpoint + `current_step` 支持多轮暂停/恢复；审批当前为对话式确认
+- **可编排**：PlanningRuntime 显式建模九阶段流程；LangGraph 仍可用于 executor / checkpoint 集成
+- **可暂停恢复**：RuntimeState 持久化在 `travel_sessions.extra_info.planning_runtime`；collect / approval 多轮 resume
 - **可扩展**：工具层与 MCP 层解耦，便于接入新旅行服务
-- **可观测**：LangSmith 追踪 LLM 调用链
-- **知识增强**：RAG 检索目的地/政策/攻略文档
+- **可观测**：LangSmith 追踪 LLM 调用链（collect 等阶段）
+- **知识增强**：EvidenceEngine 检索 EvidenceCard
 
 ---
 

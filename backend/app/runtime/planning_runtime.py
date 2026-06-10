@@ -39,13 +39,22 @@ from app.runtime.state import (
 class PlanningRuntime:
     def __init__(self, handlers: Sequence[StageHandler]) -> None:
         self._handlers = _order_handlers(handlers)
+        self._last_state: RuntimeState | None = None
+
+    @property
+    def last_state(self) -> RuntimeState | None:
+        """Return the state after the most recent run() completed or paused."""
+        return self._last_state
 
     async def run(self, state: RuntimeState) -> AsyncIterator[RuntimeEvent]:
-        """Run all V1 stages sequentially and emit internal RuntimeEvents."""
+        """Run V1 stages sequentially and emit internal RuntimeEvents."""
         current_state = RuntimeState(**state)
         run_id = current_state["run_id"]
+        handlers = _handlers_for_resume(self._handlers, current_state)
+        current_state = RuntimeState(**{**current_state, "awaiting_user": False})
+        self._last_state = current_state
 
-        for handler in self._handlers:
+        for handler in handlers:
             stage = handler.stage_name
             current_state = mark_stage_started(current_state, stage)
             yield make_stage_started_event(run_id=run_id, stage=stage)
@@ -58,6 +67,7 @@ class PlanningRuntime:
                     "message": str(exc),
                 }
                 current_state = record_runtime_error(current_state, error=error)
+                self._last_state = current_state
                 yield make_runtime_failed_event(
                     run_id=run_id,
                     stage=stage,
@@ -80,8 +90,10 @@ class PlanningRuntime:
 
             if output.get("status") == "waiting":
                 current_state = record_collect_waiting(current_state)
+                self._last_state = current_state
                 return
 
+        self._last_state = current_state
         yield make_runtime_completed_event(run_id=run_id)
 
 
@@ -125,6 +137,17 @@ def _apply_stage_state_updates(
     if data.get("finalization_result") is not None:
         updated = set_finalization_result(updated, data["finalization_result"])
     return updated
+
+
+def _handlers_for_resume(
+    handlers: tuple[StageHandler, ...],
+    state: RuntimeState,
+) -> tuple[StageHandler, ...]:
+    """Resume paused runs at the current stage instead of restarting the pipeline."""
+    if state.get("awaiting_user") and state.get("current_stage") in V1_STAGE_NAMES:
+        start_index = V1_STAGE_NAMES.index(str(state["current_stage"]))
+        return handlers[start_index:]
+    return handlers
 
 
 def _order_handlers(handlers: Sequence[StageHandler]) -> tuple[StageHandler, ...]:

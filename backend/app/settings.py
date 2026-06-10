@@ -170,6 +170,11 @@ class Settings(BaseSettings):
         alias="TRANSPORT_COORDINATOR_TIMEOUT_SECONDS",
         description="集成测试 / 同步入口调用协调器的超时秒数",
     )
+    chat_planner_backend: str = Field(
+        default="runtime",
+        alias="CHAT_PLANNER_BACKEND",
+        description="Chat 主路径：runtime（PlanningRuntime）| graph（旧 LangGraph）",
+    )
     variflight_api_key: str = Field(default="", alias="VARIFLIGHT_API_KEY")
 
     # ============== JWT ==============
@@ -196,6 +201,15 @@ class Settings(BaseSettings):
                 return False
             if normalized in {"dev", "development"}:
                 return True
+        return value
+
+    @field_validator("chat_planner_backend", mode="before")
+    @classmethod
+    def normalize_chat_planner_backend(cls, value: object) -> object:
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"runtime", "graph"}:
+                return normalized
         return value
 
     @model_validator(mode="after")
