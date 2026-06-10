@@ -15,6 +15,8 @@ from app.runtime.state import (
     set_tool_context,
     set_plan_proposals,
     set_itinerary_draft,
+    set_quality_report,
+    increment_revision_count,
 )
 
 
@@ -70,6 +72,24 @@ def test_create_initial_runtime_state_has_no_prompt_context() -> None:
     assert state.get("tool_context") is None
     assert state.get("plan_proposals") is None
     assert state.get("itinerary_draft") is None
+    assert state.get("quality_report") is None
+    assert state.get("revision_count") == 0
+
+
+def test_set_quality_report_and_increment_revision_count() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都",
+    )
+    report = {"is_acceptable": True, "has_blocking_issues": False, "score": 1.0}
+
+    updated = increment_revision_count(set_quality_report(state, report))
+    report["score"] = 0.5
+
+    assert updated["quality_report"]["score"] == 1.0
+    assert updated["revision_count"] == 1
+    assert state.get("quality_report") is None
 
 
 def test_set_plan_proposals_and_itinerary_draft_return_copies() -> None:
