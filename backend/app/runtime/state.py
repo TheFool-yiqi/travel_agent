@@ -30,6 +30,8 @@ class RuntimeState(TypedDict, total=False):
     tool_context: dict[str, Any] | None
     plan_proposals: list[dict[str, Any]] | None
     itinerary_draft: dict[str, Any] | None
+    quality_report: dict[str, Any] | None
+    revision_count: int
 
 
 def create_initial_runtime_state(
@@ -62,6 +64,8 @@ def create_initial_runtime_state(
         tool_context=None,
         plan_proposals=None,
         itinerary_draft=None,
+        quality_report=None,
+        revision_count=0,
     )
 
 
@@ -195,6 +199,23 @@ def set_itinerary_draft(
     """Return a state copy with integrated itinerary draft."""
     updated = dict(state)
     updated["itinerary_draft"] = _copy_optional_dict(itinerary_draft)
+    return RuntimeState(**updated)
+
+
+def set_quality_report(
+    state: RuntimeState,
+    quality_report: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with quality verification report."""
+    updated = dict(state)
+    updated["quality_report"] = _copy_optional_dict(quality_report)
+    return RuntimeState(**updated)
+
+
+def increment_revision_count(state: RuntimeState) -> RuntimeState:
+    """Return a state copy with revision_count incremented by one."""
+    updated = dict(state)
+    updated["revision_count"] = int(updated.get("revision_count") or 0) + 1
     return RuntimeState(**updated)
 
 

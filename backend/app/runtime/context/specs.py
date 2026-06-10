@@ -17,6 +17,8 @@ FORBIDDEN_CONTEXT_KEYS = frozenset(
         "retrieval_trace",
         "evidence_context",
         "tool_context",
+        "itinerary_draft",
+        "quality_report",
     },
 )
 
@@ -111,6 +113,10 @@ V1_CONTEXT_SPECS: dict[str, ContextSpec] = {
                 "session_facts",
                 "memory_snippets",
                 "decision_snippets",
+                "itinerary_summary",
+                "evidence_cards",
+                "sufficiency_summary",
+                "weather_summary",
             },
         ),
     ),

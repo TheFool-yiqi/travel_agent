@@ -68,6 +68,20 @@ class ContextAssembler:
                     tool_context,
                 )
 
+        if "itinerary_summary" in spec.allowed_sections:
+            itinerary_draft = state.get("itinerary_draft")
+            if itinerary_draft is not None:
+                agent_context["itinerary_summary"] = _build_itinerary_summary_view(
+                    itinerary_draft,
+                )
+
+        if "sufficiency_summary" in spec.allowed_sections:
+            sufficiency_result = state.get("sufficiency_result")
+            if sufficiency_result is not None:
+                agent_context["sufficiency_summary"] = _build_sufficiency_summary_view(
+                    sufficiency_result,
+                )
+
         self._validate_agent_context(agent_context, spec)
         return agent_context
 
@@ -154,6 +168,29 @@ def _build_weather_summary_view(tool_context: dict[str, Any]) -> dict[str, Any]:
         field: weather[field]
         for field in _WEATHER_SUMMARY_FIELDS
         if field in weather
+    }
+
+
+def _build_itinerary_summary_view(itinerary_draft: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "destination": itinerary_draft.get("destination"),
+        "travel_days": itinerary_draft.get("travel_days"),
+        "summary": itinerary_draft.get("summary") or "",
+        "assumptions": list(itinerary_draft.get("assumptions") or []),
+        "day_count": len(itinerary_draft.get("days") or []),
+        "evidence_card_ids": list(itinerary_draft.get("evidence_card_ids") or []),
+    }
+
+
+def _build_sufficiency_summary_view(sufficiency_result: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "is_sufficient": sufficiency_result.get("is_sufficient"),
+        "score": sufficiency_result.get("score"),
+        "missing_tags": list(sufficiency_result.get("missing_tags") or []),
+        "missing_evidence_types": list(
+            sufficiency_result.get("missing_evidence_types") or [],
+        ),
+        "suggested_action": sufficiency_result.get("suggested_action"),
     }
 
 

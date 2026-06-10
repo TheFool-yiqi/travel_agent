@@ -28,6 +28,7 @@ from app.runtime.state import (
     set_tool_context,
     set_plan_proposals,
     set_itinerary_draft,
+    set_quality_report,
 )
 
 
@@ -109,6 +110,8 @@ def _apply_stage_state_updates(
         updated = set_plan_proposals(updated, data["plan_proposals"])
     if data.get("itinerary_draft") is not None:
         updated = set_itinerary_draft(updated, data["itinerary_draft"])
+    if data.get("quality_report") is not None:
+        updated = set_quality_report(updated, data["quality_report"])
     return updated
 
 
