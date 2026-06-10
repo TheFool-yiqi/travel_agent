@@ -44,6 +44,8 @@ from app.graph.greeting import build_greeting_reply, is_greeting_only_text
 from app.graph.stream_callback import set_stream_token_handler
 from app.services.conversation_bootstrap import has_assistant_messages
 
+from app.settings import settings
+
 from app.services.itinerary_service import (
     approve_itinerary_with_order,
     upsert_itinerary_from_chat,
@@ -340,7 +342,33 @@ async def iter_chat_events(
 
 ) -> AsyncIterator[dict[str, Any]]:
 
-    """LangGraph 规划流事件（dict，供 SSE / WebSocket 共用）。"""
+    """Chat stream events (default PlanningRuntime; legacy graph via settings)."""
+
+    if settings.chat_planner_backend == "graph":
+        async for event in iter_chat_events_graph(conversation_id, user_message, user):
+            yield event
+        return
+
+    from app.services.runtime_chat_service import iter_chat_events_runtime
+
+    async for event in iter_chat_events_runtime(conversation_id, user_message, user):
+        yield event
+
+
+
+
+
+async def iter_chat_events_graph(
+
+    conversation_id: uuid.UUID,
+
+    user_message: str,
+
+    user: User,
+
+) -> AsyncIterator[dict[str, Any]]:
+
+    """Legacy LangGraph planning stream (dict events for SSE / WebSocket)."""
 
     assistant_message = ""
 

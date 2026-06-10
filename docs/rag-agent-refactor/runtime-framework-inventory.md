@@ -187,6 +187,17 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/runtime/test_runtime_frontend_transport.py` | Frontend transport multiplex integration tests | Slice 9 | active | — | — | 2026-06-10 |
 | `backend/tests/runtime/test_streaming_adapter_smoke.py` | Slice 9 end-to-end frontend event smoke tests | Slice 9 | active | — | — | 2026-06-10 |
 
+### Runtime Chat Path
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/session_state.py` | RuntimeState session persistence helpers | Phase 9 | active | — | — | 2026-06-10 |
+| `backend/app/services/runtime_chat_service.py` | Default PlanningRuntime chat stream | Phase 9 | active | — | — | 2026-06-10 |
+| `backend/app/services/chat_stream.py` | Chat dispatch + legacy graph stream | Slice 2, Phase 9 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_session_state.py` | Session state persistence tests | Phase 9 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_planning_runtime_resume.py` | PlanningRuntime resume tests | Phase 9 | active | — | — | 2026-06-10 |
+| `backend/tests/test_chat_path_dispatch.py` | Default chat path dispatch tests | Phase 9 | active | — | — | 2026-06-10 |
+
 ## Reused Existing Files
 
 这些文件仍由现有系统拥有。Slice 1/2 只复用其能力、接口经验或回归测试，不迁移其
