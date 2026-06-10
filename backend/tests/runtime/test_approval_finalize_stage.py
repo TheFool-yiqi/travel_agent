@@ -25,6 +25,23 @@ async def test_approve_or_revise_waits_without_approval_keyword() -> None:
 
 
 @pytest.mark.asyncio
+async def test_approve_or_revise_applies_user_revision_and_reopens_approval() -> None:
+    state = await _state_after_integrate()
+    verify_result = await VerifyStageHandler().handle(state)
+    state = verify_result["data"]["state"]
+    state = {**state, "input_message": "我想修改行程，请根据我的偏好重新调整。"}
+
+    result = await ApproveOrReviseStageHandler().handle(state)
+
+    assert result["status"] == "waiting"
+    assert result["data"]["approval_status"] == "pending"
+    assert result["data"]["itinerary_draft"] is not None
+    assert "按用户偏好调整后的体验" in str(result["data"]["itinerary_draft"])
+    assert result["data"]["state"]["revision_count"] == 1
+    assert result["data"]["quality_report"] is not None
+
+
+@pytest.mark.asyncio
 async def test_approve_or_revise_completes_on_confirm() -> None:
     state = await _state_after_integrate()
     state = {**state, "input_message": "确认"}

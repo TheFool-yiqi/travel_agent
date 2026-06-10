@@ -11,11 +11,39 @@ class RevisionAgent:
     """Apply one deterministic auto-revision pass before re-verification."""
 
     def revise(self, state: RuntimeState, report: QualityReport) -> ItineraryDraft:
-        draft_raw = state.get("itinerary_draft")
-        if not draft_raw:
-            raise ValueError("RevisionAgent requires itinerary_draft")
+        draft = _load_draft(state)
+        return self._revise_from_quality_report(draft, state, report)
 
-        draft = ItineraryDraft.from_runtime_dict(dict(draft_raw))
+    def revise_from_user_feedback(self, state: RuntimeState, feedback: str) -> ItineraryDraft:
+        """Apply a deterministic revision pass from explicit user feedback."""
+        draft = _load_draft(state)
+        note = f"用户修订意见：{feedback.strip()}"
+        if note not in draft.integration_notes:
+            draft.integration_notes.append(note)
+
+        summary = draft.summary.strip()
+        suffix = "（已按用户意见修订）"
+        draft.summary = f"{summary}{suffix}" if summary else suffix.lstrip("（").rstrip("）")
+
+        if draft.days:
+            days = [dict(day) for day in draft.days]
+            first_day = days[0]
+            activities = list(first_day.get("activities") or [])
+            marker = "按用户偏好调整后的体验"
+            if marker not in activities:
+                activities.append(marker)
+            first_day["activities"] = activities
+            days[0] = first_day
+            draft.days = days
+
+        return draft
+
+    def _revise_from_quality_report(
+        self,
+        draft: ItineraryDraft,
+        state: RuntimeState,
+        report: QualityReport,
+    ) -> ItineraryDraft:
         issue_codes = {issue.code for issue in report.issues}
 
         if "assumptions_missing" in issue_codes or "evidence_insufficient" in issue_codes:
@@ -45,6 +73,13 @@ class RevisionAgent:
                     draft.integration_notes.append(note)
 
         return draft
+
+
+def _load_draft(state: RuntimeState) -> ItineraryDraft:
+    draft_raw = state.get("itinerary_draft")
+    if not draft_raw:
+        raise ValueError("RevisionAgent requires itinerary_draft")
+    return ItineraryDraft.from_runtime_dict(dict(draft_raw))
 
 
 def _normalize_day_count(

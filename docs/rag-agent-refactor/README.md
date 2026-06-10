@@ -51,7 +51,8 @@ Skeleton 与 LangGraph / streaming adapter，不进入 collect、Evidence、Tool
 | [16-v1-quality-verifier-implementation-plan.md](16-v1-quality-verifier-implementation-plan.md) | QualityVerifier、RevisionAgent 和 verify 的 Slice 7 实施计划（**已完成**） |
 | [17-v1-approval-finalize-implementation-plan.md](17-v1-approval-finalize-implementation-plan.md) | approval / finalize 和持久化的 Slice 8 实施计划（**已完成**） |
 | [18-v1-streaming-frontend-adapter-implementation-plan.md](18-v1-streaming-frontend-adapter-implementation-plan.md) | RuntimeEvent → 前端 SSE/WS 契约的 Slice 9 实施计划（**已完成**） |
-| [19-v1-old-flow-retirement-implementation-plan.md](19-v1-old-flow-retirement-implementation-plan.md) | Chat 默认路径切换 PlanningRuntime 的 Phase 9 实施计划 |
+| [19-v1-old-flow-retirement-implementation-plan.md](19-v1-old-flow-retirement-implementation-plan.md) | Chat 默认路径切换 PlanningRuntime 的 Phase 9 实施计划（**已完成**） |
+| [20-v1-revision-routing-implementation-plan.md](20-v1-revision-routing-implementation-plan.md) | 用户修订路由与 E2E Runtime 对齐 |
 
 ## 当前定稿结论
 

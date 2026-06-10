@@ -57,6 +57,10 @@ def _adapt_stage_completed(event: RuntimeEvent) -> list[dict[str, Any]]:
             events.append(_itinerary_event_from_draft(draft))
 
     if stage == "approve_or_revise" and output.get("status") == "waiting":
+        draft = data.get("itinerary_draft")
+        if isinstance(draft, dict):
+            events.append(_itinerary_event_from_draft(draft))
+
         pending = data.get("pending_approval")
         message = _DEFAULT_APPROVAL_MESSAGE
         if isinstance(pending, dict):
