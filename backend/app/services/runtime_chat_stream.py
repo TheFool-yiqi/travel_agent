@@ -8,6 +8,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from app.runtime.events import RuntimeEvent
+from app.runtime.streaming.frontend_adapter import adapt_runtime_event_to_frontend_events
 
 
 def _drain_stream_tokens(queue: asyncio.Queue[str]) -> list[str]:
@@ -61,3 +62,17 @@ async def _iter_runtime_events_and_tokens(
 
     for token in _drain_stream_tokens(token_queue):
         yield ("token", token)
+
+
+async def iter_frontend_transport_events(
+    runtime_events: AsyncIterator[RuntimeEvent],
+    token_queue: asyncio.Queue[str],
+) -> AsyncIterator[dict[str, Any]]:
+    """Multiplex RuntimeEvents and tokens, yielding frontend transport dicts."""
+    async for kind, payload in _iter_runtime_events_and_tokens(runtime_events, token_queue):
+        if kind == "token":
+            yield {"type": "token", "content": payload}
+            continue
+
+        for event in adapt_runtime_event_to_frontend_events(payload):
+            yield event
