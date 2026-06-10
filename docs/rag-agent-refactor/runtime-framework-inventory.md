@@ -175,6 +175,18 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/runtime/test_approval_finalize_stage.py` | Approval/finalize stage tests | Slice 8 | active | — | — | 2026-06-10 |
 | `backend/tests/runtime/test_approval_finalize_smoke.py` | Slice 8 end-to-end approval/finalize smoke tests | Slice 8 | active | — | — | 2026-06-10 |
 
+### Runtime Streaming Adapter
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/streaming/__init__.py` | Streaming adapter package boundary | Slice 9 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/streaming/stage_labels.py` | V1 stage display labels for frontend step events | Slice 9 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/streaming/frontend_adapter.py` | RuntimeEvent → frontend transport mapping | Slice 9 | active | — | — | 2026-06-10 |
+| `backend/app/services/runtime_chat_stream.py` | RuntimeEvent/token multiplexing + `iter_frontend_transport_events` | Slice 2, extended Slice 9 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_runtime_frontend_adapter.py` | Frontend adapter unit tests | Slice 9 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_runtime_frontend_transport.py` | Frontend transport multiplex integration tests | Slice 9 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_streaming_adapter_smoke.py` | Slice 9 end-to-end frontend event smoke tests | Slice 9 | active | — | — | 2026-06-10 |
+
 ## Reused Existing Files
 
 这些文件仍由现有系统拥有。Slice 1/2 只复用其能力、接口经验或回归测试，不迁移其
@@ -183,7 +195,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | Path | Owner / responsibility | Introduced or reused by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
 |------|------------------------|-------------------------------|----------------|------------------|------------------------|-------------------|
 | `backend/app/graph/checkpoint.py` | Existing LangGraph checkpointer creation and compatibility handling | Reused by future executor integration | compatibility | Runtime executor may consume its checkpointer through dependency injection | Runtime checkpointer/interrupt/resume integration verified before ownership changes | 2026-06-06 |
-| `backend/app/services/chat_stream.py` | Existing graph-event/token streaming and message persistence | Slice 2 behavior reference and compatibility path | compatibility | `backend/app/services/runtime_chat_stream.py` only replaces multiplexing for new Runtime | New Runtime becomes default chat path and all persistence/transport behavior has equivalent coverage | 2026-06-06 |
+| `backend/app/services/chat_stream.py` | Existing graph-event/token streaming and message persistence | Slice 2 behavior reference and compatibility path | compatibility | `runtime_chat_stream.iter_frontend_transport_events` for new Runtime | New Runtime becomes default chat path and all persistence/transport behavior has equivalent coverage | 2026-06-10 |
 | `backend/app/ws/chat_stream.py` | Existing WebSocket chat transport | Future Runtime transport integration | compatibility | No replacement confirmed; expected to reuse through adapter | Frontend and WebSocket switch approved and regression-tested | 2026-06-06 |
 | `backend/tests/test_chat_stream.py` | Existing streaming compatibility tests | Slice 2 regression verification | compatibility | Runtime stream tests cover only new multiplexer behavior | Old stream path retired and equivalent persistence/transport tests exist | 2026-06-06 |
 | `backend/tests/test_checkpoint.py` | Existing checkpoint compatibility tests | Slice 2 regression verification | compatibility | Future Runtime checkpoint tests | Runtime checkpoint/interrupt/resume tests provide equivalent coverage | 2026-06-06 |
