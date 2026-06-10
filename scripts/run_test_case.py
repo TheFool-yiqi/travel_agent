@@ -7,6 +7,8 @@ import json
 import re
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -59,15 +61,26 @@ def filter_cases(
     return cases
 
 
+def backend_reachable(base_url: str = "http://localhost:8200/health") -> bool:
+    try:
+        with urllib.request.urlopen(base_url, timeout=3) as response:
+            return response.status == 200
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return False
+
+
 def run_command(command: list[str], cwd: Path, timeout: int) -> tuple[int, str]:
-    proc = subprocess.run(
-        command,
-        cwd=cwd,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        shell=False,
-    )
+    kwargs: dict = {
+        "cwd": cwd,
+        "capture_output": True,
+        "text": True,
+        "timeout": timeout,
+    }
+    # Windows: npx/npm are .cmd shims; shell=False raises FileNotFoundError.
+    if sys.platform == "win32":
+        proc = subprocess.run(subprocess.list2cmdline(command), shell=True, **kwargs)
+    else:
+        proc = subprocess.run(command, shell=False, **kwargs)
     output = (proc.stdout or "") + (proc.stderr or "")
     return proc.returncode, output
 
@@ -87,6 +100,9 @@ def evaluate_result(case: dict, exit_code: int, output: str) -> bool:
     if case.get("layer") == "playwright":
         if re.search(r"\bfailed\b", output, re.I):
             return False
+        # All skipped (e.g. backend down) is not a manifest PASS unless explicit.
+        if re.search(r"\d+ skipped", output) and not re.search(r"\d+ passed", output):
+            return False
     return True
 
 
@@ -94,6 +110,21 @@ def run_case(case: dict, *, suite: str | None = None) -> CaseResult:
     cwd = ROOT / case.get("cwd", ".")
     timeout = int(case.get("timeout_seconds", 600))
     command = case["command"]
+
+    if case.get("layer") == "playwright" and not backend_reachable():
+        return CaseResult(
+            case_id=case["id"],
+            title=case["title"],
+            passed=False,
+            exit_code=-1,
+            command=command,
+            output_tail=(
+                "BLOCKED: backend :8200 unreachable. "
+                "Start Docker Desktop, then: docker compose up -d && make backend"
+            ),
+            suite=suite,
+        )
+
     exit_code, output = run_command(command, cwd, timeout)
     passed = evaluate_result(case, exit_code, output)
     tail = output.strip()[-2000:] if output else ""
