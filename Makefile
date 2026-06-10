@@ -12,7 +12,8 @@ help:
 	@echo "  make test-backend   运行后端单元测试"
 	@echo "  make test-frontend  前端 build + lint"
 	@echo "  make test-e2e       Playwright 全部 e2e (自动起 dev server)"
-	@echo "  make test-smoke     冒烟 — 后端 pytest (-m smoke)"
+	@echo "  make test-ai-smoke   AI manifest 冒烟套件 (SUITE-SMOKE)"
+	@echo "  make test-ai-runtime AI manifest Runtime 套件 (SUITE-RUNTIME)"
 	@echo "  make test-smoke-ui  冒烟 — 后端 + Playwright (需 backend 已启动)"
 	@echo ""
 	@echo "首次启动: docker-up -> init-db -> backend (另开终端 frontend)"
@@ -44,6 +45,12 @@ test-e2e:
 
 test-smoke:
 	uv run pytest backend/tests/ -m smoke -q
+
+test-ai-smoke:
+	uv run python scripts/run_test_case.py --suite SUITE-SMOKE
+
+test-ai-runtime:
+	uv run python scripts/run_test_case.py --suite SUITE-RUNTIME
 
 test-smoke-ui: test-smoke
 	cd frontend && npx pnpm@9.15.0 exec playwright test --config ../playwright.config.ts
