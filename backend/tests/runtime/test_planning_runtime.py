@@ -24,9 +24,20 @@ class CompletedCollectStub:
         )
 
 
+class CompletedStageStub(SkeletonStageHandler):
+    """Stub late-stage handlers so collect-stub runtime tests reach runtime_completed."""
+
+    def __init__(self, stage_name: str) -> None:
+        self.stage_name = stage_name
+        self.summary = f"{stage_name} stub completed"
+
+
 def _handlers_with_completed_collect() -> list:
     handlers = list(build_default_stage_handlers())
     handlers[0] = CompletedCollectStub()
+    for index, stage_name in enumerate(V1_STAGE_NAMES):
+        if stage_name in {"approve_or_revise", "finalize"}:
+            handlers[index] = CompletedStageStub(stage_name)
     return handlers
 
 

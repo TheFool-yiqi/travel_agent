@@ -32,6 +32,9 @@ class RuntimeState(TypedDict, total=False):
     itinerary_draft: dict[str, Any] | None
     quality_report: dict[str, Any] | None
     revision_count: int
+    approval_status: str | None
+    order_id: str | None
+    finalization_result: dict[str, Any] | None
 
 
 def create_initial_runtime_state(
@@ -66,6 +69,9 @@ def create_initial_runtime_state(
         itinerary_draft=None,
         quality_report=None,
         revision_count=0,
+        approval_status=None,
+        order_id=None,
+        finalization_result=None,
     )
 
 
@@ -216,6 +222,45 @@ def increment_revision_count(state: RuntimeState) -> RuntimeState:
     """Return a state copy with revision_count incremented by one."""
     updated = dict(state)
     updated["revision_count"] = int(updated.get("revision_count") or 0) + 1
+    return RuntimeState(**updated)
+
+
+def set_pending_approval(
+    state: RuntimeState,
+    pending_approval: dict[str, Any] | None,
+) -> RuntimeState:
+    updated = dict(state)
+    updated["pending_approval"] = _copy_optional_dict(pending_approval)
+    return RuntimeState(**updated)
+
+
+def clear_pending_approval(state: RuntimeState) -> RuntimeState:
+    updated = dict(state)
+    updated["pending_approval"] = None
+    return RuntimeState(**updated)
+
+
+def set_approval_status(
+    state: RuntimeState,
+    approval_status: str | None,
+) -> RuntimeState:
+    updated = dict(state)
+    updated["approval_status"] = approval_status
+    return RuntimeState(**updated)
+
+
+def set_order_id(state: RuntimeState, order_id: str | None) -> RuntimeState:
+    updated = dict(state)
+    updated["order_id"] = order_id
+    return RuntimeState(**updated)
+
+
+def set_finalization_result(
+    state: RuntimeState,
+    finalization_result: dict[str, Any] | None,
+) -> RuntimeState:
+    updated = dict(state)
+    updated["finalization_result"] = _copy_optional_dict(finalization_result)
     return RuntimeState(**updated)
 
 

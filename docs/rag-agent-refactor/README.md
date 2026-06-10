@@ -48,7 +48,8 @@ Skeleton 与 LangGraph / streaming adapter，不进入 collect、Evidence、Tool
 | [13-v1-evidence-engine-implementation-plan.md](13-v1-evidence-engine-implementation-plan.md) | EvidenceCard 检索、EvidenceEngine、ChineseTokenizer 和 retrieve_evidence 的 Slice 4 实施计划（**已完成**） |
 | [14-v1-tool-service-implementation-plan.md](14-v1-tool-service-implementation-plan.md) | ToolService allowlist、WeatherTool 和 tool_enrich 的 Slice 5 实施计划（**已完成**） |
 | [15-v1-domain-planner-implementation-plan.md](15-v1-domain-planner-implementation-plan.md) | DomainPlannerGroup、ItineraryIntegrator 和 domain_plan / integrate 的 Slice 6 实施计划（**已完成**） |
-| [16-v1-quality-verifier-implementation-plan.md](16-v1-quality-verifier-implementation-plan.md) | QualityVerifier、RevisionAgent 和 verify 的 Slice 7 实施计划 |
+| [16-v1-quality-verifier-implementation-plan.md](16-v1-quality-verifier-implementation-plan.md) | QualityVerifier、RevisionAgent 和 verify 的 Slice 7 实施计划（**已完成**） |
+| [17-v1-approval-finalize-implementation-plan.md](17-v1-approval-finalize-implementation-plan.md) | approval / finalize 和持久化的 Slice 8 实施计划 |
 
 ## 当前定稿结论
 

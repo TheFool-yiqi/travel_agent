@@ -29,6 +29,10 @@ from app.runtime.state import (
     set_plan_proposals,
     set_itinerary_draft,
     set_quality_report,
+    set_pending_approval,
+    set_approval_status,
+    set_order_id,
+    set_finalization_result,
 )
 
 
@@ -112,6 +116,14 @@ def _apply_stage_state_updates(
         updated = set_itinerary_draft(updated, data["itinerary_draft"])
     if data.get("quality_report") is not None:
         updated = set_quality_report(updated, data["quality_report"])
+    if data.get("pending_approval") is not None:
+        updated = set_pending_approval(updated, data["pending_approval"])
+    if data.get("approval_status") is not None:
+        updated = set_approval_status(updated, str(data["approval_status"]))
+    if data.get("order_id") is not None:
+        updated = set_order_id(updated, str(data["order_id"]))
+    if data.get("finalization_result") is not None:
+        updated = set_finalization_result(updated, data["finalization_result"])
     return updated
 
 
