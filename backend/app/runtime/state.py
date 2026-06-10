@@ -28,6 +28,8 @@ class RuntimeState(TypedDict, total=False):
     evidence_context: dict[str, Any] | None
     sufficiency_result: dict[str, Any] | None
     tool_context: dict[str, Any] | None
+    plan_proposals: list[dict[str, Any]] | None
+    itinerary_draft: dict[str, Any] | None
 
 
 def create_initial_runtime_state(
@@ -58,6 +60,8 @@ def create_initial_runtime_state(
         evidence_context=None,
         sufficiency_result=None,
         tool_context=None,
+        plan_proposals=None,
+        itinerary_draft=None,
     )
 
 
@@ -168,6 +172,29 @@ def set_tool_context(
     """Return a state copy with tool enrichment context."""
     updated = dict(state)
     updated["tool_context"] = _copy_optional_dict(tool_context)
+    return RuntimeState(**updated)
+
+
+def set_plan_proposals(
+    state: RuntimeState,
+    plan_proposals: list[dict[str, Any]] | None,
+) -> RuntimeState:
+    """Return a state copy with domain planner proposals."""
+    updated = dict(state)
+    if plan_proposals is None:
+        updated["plan_proposals"] = None
+    else:
+        updated["plan_proposals"] = copy.deepcopy(plan_proposals)
+    return RuntimeState(**updated)
+
+
+def set_itinerary_draft(
+    state: RuntimeState,
+    itinerary_draft: dict[str, Any] | None,
+) -> RuntimeState:
+    """Return a state copy with integrated itinerary draft."""
+    updated = dict(state)
+    updated["itinerary_draft"] = _copy_optional_dict(itinerary_draft)
     return RuntimeState(**updated)
 
 

@@ -13,6 +13,8 @@ from app.runtime.state import (
     set_planning_need,
     set_sufficiency_result,
     set_tool_context,
+    set_plan_proposals,
+    set_itinerary_draft,
 )
 
 
@@ -66,6 +68,26 @@ def test_create_initial_runtime_state_has_no_prompt_context() -> None:
     assert state.get("evidence_context") is None
     assert state.get("sufficiency_result") is None
     assert state.get("tool_context") is None
+    assert state.get("plan_proposals") is None
+    assert state.get("itinerary_draft") is None
+
+
+def test_set_plan_proposals_and_itinerary_draft_return_copies() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都",
+    )
+    proposals = [{"agent_name": "destination_planner", "summary": "成都"}]
+    draft = {"destination": "成都", "travel_days": 3, "days": []}
+
+    updated = set_itinerary_draft(set_plan_proposals(state, proposals), draft)
+    proposals.append({"agent_name": "stay_food_planner", "summary": "food"})
+    draft["travel_days"] = 5
+
+    assert len(updated["plan_proposals"]) == 1
+    assert updated["itinerary_draft"]["travel_days"] == 3
+    assert state.get("plan_proposals") is None
 
 
 def test_set_tool_context_returns_copy() -> None:
