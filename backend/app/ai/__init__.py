@@ -1,8 +1,6 @@
 from app.ai.embeddings import get_embedding_model
 from app.ai.llm import (
     create_memory_chat_agent,
-    create_travel_agent,
-    create_travel_planner,
     get_chat_model,
     get_fast_chat_model,
     get_llm,
@@ -10,8 +8,6 @@ from app.ai.llm import (
 
 __all__ = [
     "create_memory_chat_agent",
-    "create_travel_agent",
-    "create_travel_planner",
     "get_chat_model",
     "get_fast_chat_model",
     "get_llm",

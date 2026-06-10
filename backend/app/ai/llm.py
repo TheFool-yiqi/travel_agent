@@ -1,16 +1,11 @@
-"""LLM 客户端与 Agent / Graph 工厂（OpenAI 兼容模式，默认小米 MiMo）"""
-
-import asyncio
+"""LLM 客户端（OpenAI 兼容模式，默认小米 MiMo）"""
 
 import httpx
 from langchain_openai import ChatOpenAI
-from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import create_react_agent
 
 from app.settings import settings
 
-_cached_planner: CompiledStateGraph | None = None
-_planner_lock = asyncio.Lock()
 _mimo_sync_client: httpx.Client | None = None
 _mimo_async_client: httpx.AsyncClient | None = None
 
@@ -60,9 +55,6 @@ def get_fast_chat_model(*, streaming: bool = False) -> ChatOpenAI:
 async def create_memory_chat_agent(user_id: str):
     """
     轻量记忆对话 Agent（无分步 Graph，适用于 demo / 开放式问答）。
-
-    与 Handoffs 参考代码中的 create_travel_agent 不同：
-    正式分步规划请使用 create_travel_planner()。
     """
     from app.dependencies import get_user_memory_service
 
@@ -87,33 +79,3 @@ async def create_memory_chat_agent(user_id: str):
 def get_llm(*, streaming: bool = True) -> ChatOpenAI:
     """兼容 Handoffs `get_llm()` 命名；默认 MiMo（非参考中的千问直连）。"""
     return get_chat_model(streaming=streaming)
-
-
-async def create_travel_planner() -> CompiledStateGraph:
-    """
-    正式旅行规划 Graph（路线1：节点 + 路由 + Checkpoint）。
-
-    等价于 Handoffs 参考代码中的 create_travel_agent + middleware + tools，
-    但流程由 graph/nodes 显式编排，回退由 rollback.py 处理。
-    """
-    global _cached_planner
-    if _cached_planner is not None:
-        return _cached_planner
-
-    async with _planner_lock:
-        if _cached_planner is None:
-            from app.graph.builder import build_travel_graph
-
-            _cached_planner = await build_travel_graph()
-    return _cached_planner
-
-
-async def create_travel_agent() -> CompiledStateGraph:
-    """
-    Handoffs 兼容入口（参考 `create_travel_agent`）。
-
-    参考实现：单 Agent + `create_step_config_middleware` + 全量 tools。
-    本项目 Route 1：返回 LangGraph 编译图（`build_travel_graph`），
-    步骤 prompt/tools 见 `graph/step_config`，回退见 `graph/rollback.py`。
-    """
-    return await create_travel_planner()

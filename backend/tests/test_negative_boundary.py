@@ -212,23 +212,6 @@ def test_neg_019_emoji_only_no_slot_pollution() -> None:
     assert "departure_city" not in updates
 
 
-@pytest.mark.asyncio
-async def test_neg_022_bare_revision_routes_to_revise() -> None:
-    """TC-NEG-022: approval 阶段仅「修改」→ 进入 revise 并给出调整提示。"""
-    from langchain_core.messages import HumanMessage
-
-    from app.graph.nodes.approval_node import approval_node
-
-    result = await approval_node(
-        {
-            "itinerary": [{"day_number": 1}],
-            "messages": [HumanMessage(content="修改")],
-        }
-    )
-    assert result["current_step"] == "revise_itinerary"
-    assert "调整" in result["messages"][0].content
-
-
 def test_neg_020_xss_payload_not_accepted_as_city() -> None:
     """TC-NEG-020: XSS payload 不被当作有效目的地。"""
     from app.graph.semantic.destination_resolver import resolve_destination_input

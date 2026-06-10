@@ -19,11 +19,10 @@ from app.db.models.travel_session import TravelSession
 from app.db.models.user import User
 from app.db.session import get_db
 from app.graph.middleware import apply_step_config_for_model_call
-from app.graph.nodes.inject_memory import inject_user_memory
 from app.graph.semantic.correction_handler import detect_user_correction
 from app.graph.semantic.destination_resolver import resolve_destination_input
 from app.graph.semantic.slot_tracker import bind_utterance_to_slots
-from app.graph.steps import PLANNING_STEPS
+from app.runtime.manifest import V1_STAGE_NAMES
 from app.main import app
 from app.schemas.travel import RequirementExtraction
 from app.security.jwt import create_access_token
@@ -161,24 +160,6 @@ def test_req_012_parallel_multi_slot_merge() -> None:
     assert merged["travel_days"] == 3
 
 
-@pytest.mark.asyncio
-async def test_req_022_inject_user_memory_skips_greeting(monkeypatch: pytest.MonkeyPatch) -> None:
-    """TC-REQ-022: inject_user_memory 在寒暄时跳过."""
-    from langchain_core.messages import HumanMessage
-
-    monkeypatch.setattr(
-        "app.graph.nodes.inject_memory.format_user_memory_for_prompt",
-        AsyncMock(return_value="偏好：文化游"),
-    )
-    result = await inject_user_memory(
-        {
-            "user_id": str(uuid.uuid4()),
-            "messages": [HumanMessage(content="你好")],
-        }
-    )
-    assert result == {}
-
-
 def test_req_024_fuzzy_date_clarify_via_parse() -> None:
     """TC-REQ-024: 模糊日期「下周五」可解析."""
     from app.tools.datetime_tools import parse_relative_date
@@ -240,15 +221,6 @@ def test_plan_003_plan_destination_requires_user_requirement() -> None:
         apply_step_config_for_model_call("plan_destination", {}, instruction="hi")
 
 
-def test_plan_010_driving_selection_route() -> None:
-    """TC-PLAN-010: driving 选择后本轮结束，下轮由 route_after_memory 进入 stay。"""
-    from app.graph.routers.step_router import route_after_transport
-
-    assert route_after_transport(
-        {"current_step": "plan_stay_and_food", "selected_transport": "driving"}
-    ) == "__end__"
-
-
 def test_plan_011_invalid_transport_not_in_enum() -> None:
     """TC-PLAN-011: ship 不在 VALID_TRANSPORT."""
     from app.schemas.travel import VALID_TRANSPORT
@@ -264,35 +236,17 @@ def test_plan_014_stay_enum_values() -> None:
     assert len(VALID_ACCOMMODATION) >= 4
 
 
-def test_plan_042_empty_itinerary_guard() -> None:
-    """TC-PLAN-042: approval 缺 itinerary 被 middleware 拦截."""
-    with pytest.raises(ValueError, match="itinerary"):
-        apply_step_config_for_model_call(
-            "approval_node",
-            {"user_requirement": {}, "budget": {"total": 1000}},
-            instruction="hi",
-        )
-
-
 def test_plan_043_travel_days_matches_itinerary_length() -> None:
     """TC-PLAN-043: 3 天行程长度一致."""
     days = [{"day_number": i, "theme": f"D{i}"} for i in range(1, 4)]
     assert len(days) == 3
 
 
-def test_plan_044_budget_party_multiplier() -> None:
-    """TC-PLAN-044: 低预算 + 高 total 触发 budget_warning."""
-    from app.graph.nodes.build_itinerary import budget_warning
-
-    state = {"user_requirement": {"budget_max": 2000, "adult_count": 2, "children_count": 1}}
-    warning = budget_warning(state, {"total": 8000})
-    assert warning is not None
-
-
-def test_plan_045_step_labels_cover_planning_chain() -> None:
-    """TC-PLAN-045: SSE step 标签覆盖规划链."""
-    assert "plan_destination" in PLANNING_STEPS
-    assert "build_itinerary" in PLANNING_STEPS
+def test_plan_045_runtime_stage_manifest_covers_pipeline() -> None:
+    """TC-PLAN-045: Runtime 九阶段 manifest 完整。"""
+    assert "collect" in V1_STAGE_NAMES
+    assert "finalize" in V1_STAGE_NAMES
+    assert len(V1_STAGE_NAMES) == 9
 
 
 # --- SESS / DATA ---

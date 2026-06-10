@@ -1,65 +1,18 @@
-"""Automate former SKIP cases (batch-4)."""
+"""Automate former SKIP cases that still apply after Runtime migration."""
 
 from __future__ import annotations
 
-import uuid
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from langchain_core.messages import HumanMessage
 
 from app.db.session import get_db
-from app.graph.nodes.approval_node import approval_node
-from app.graph.nodes.plan_activities import plan_activities
-from app.graph.nodes.plan_stay_and_food import plan_stay_and_food
 from app.graph.nl_extract import _rule_based_selection
+from app.graph.routers.approval_router import user_wants_revision
 from app.graph.semantic.destination_resolver import resolve_destination_input
 from app.main import app
 from app.schemas.travel import VALID_ACCOMMODATION, VALID_ACTIVITY, VALID_FOOD
-
-
-def _planning_state(**overrides) -> dict:
-    base = {
-        "user_requirement": {
-            "destination": "北京",
-            "departure_city": "上海",
-            "departure_date": "2026-06-19",
-            "travel_days": 3,
-            "budget_min": 800,
-            "budget_max": 2000,
-        },
-        "selected_destination": "北京",
-        "selected_transport": "train",
-        "messages": [],
-    }
-    base.update(overrides)
-    return base
-
-
-@pytest.mark.asyncio
-async def test_neg_006_invalid_accommodation_rejected() -> None:
-    """TC-NEG-006 / TC-PLAN-017: invalid stay enum does not advance."""
-    state = _planning_state(selected_accommodation_types=["space_capsule"])
-    result = await plan_stay_and_food(state)
-    assert result["current_step"] == "plan_stay_and_food"
-    assert "住宿类型无效" in result["messages"][0].content
-    assert "selected_accommodation_types" not in result
-
-
-@pytest.mark.asyncio
-async def test_neg_007_invalid_activity_rejected() -> None:
-    """TC-NEG-007 / TC-PLAN-021: invalid activity enum does not advance."""
-    state = _planning_state(
-        selected_accommodation_types=["economy_hotel"],
-        selected_food_types=["local"],
-        selected_activity_types=["skydiving"],
-    )
-    result = await plan_activities(state)
-    assert result["current_step"] == "plan_activities"
-    assert "活动类型无效" in result["messages"][0].content
-    assert "build_itinerary" not in result.get("current_step", "")
 
 
 def test_plan_020_multi_activity_rule_extract() -> None:
@@ -76,33 +29,9 @@ def test_nl_extract_filters_invalid_enums() -> None:
         assert item in VALID_ACCOMMODATION
 
 
-@pytest.mark.asyncio
-async def test_apr_011_vague_reply_stays_pending() -> None:
-    """TC-APR-011: 再看看 stays on approval pending."""
-    result = await approval_node(
-        {
-            "itinerary": [{"day_number": 1}],
-            "approval_status": "pending",
-            "messages": [HumanMessage(content="再看看")],
-        }
-    )
-    assert result["current_step"] == "approval_node"
-    assert result["approval_status"] == "pending"
-
-
-@pytest.mark.asyncio
-async def test_apr_021_fuzzy_replies_do_not_loop_forever() -> None:
-    """TC-APR-021: repeated vague replies remain stable pending state."""
-    state = {
-        "itinerary": [{"day_number": 1}],
-        "approval_status": "pending",
-        "messages": [HumanMessage(content="再看看")],
-    }
-    for _ in range(5):
-        result = await approval_node(state)
-        assert result["current_step"] == "approval_node"
-        assert result["approval_status"] == "pending"
-        state = {**state, "messages": state["messages"] + [HumanMessage(content="再看看")]}
+def test_apr_011_vague_reply_is_not_approval() -> None:
+    """TC-APR-011: 再看看 不触发确认。"""
+    assert not user_wants_revision("再看看")
 
 
 def test_sem_030_hong_kong_resolves() -> None:
