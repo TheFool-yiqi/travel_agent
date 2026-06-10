@@ -17,6 +17,10 @@ from app.runtime.state import (
     set_itinerary_draft,
     set_quality_report,
     increment_revision_count,
+    set_approval_status,
+    set_finalization_result,
+    set_order_id,
+    set_pending_approval,
 )
 
 
@@ -74,6 +78,33 @@ def test_create_initial_runtime_state_has_no_prompt_context() -> None:
     assert state.get("itinerary_draft") is None
     assert state.get("quality_report") is None
     assert state.get("revision_count") == 0
+    assert state.get("approval_status") is None
+    assert state.get("order_id") is None
+    assert state.get("finalization_result") is None
+
+
+def test_set_approval_and_finalization_fields_return_copies() -> None:
+    state = create_initial_runtime_state(
+        run_id="run_1",
+        conversation_id="conv_1",
+        input_message="成都",
+    )
+    pending = {"status": "pending", "itinerary_summary": "成都草案"}
+    finalization = {"order_id": "ORDER-1", "final_message": "完成", "destination": "成都", "travel_days": 3}
+
+    updated = set_finalization_result(
+        set_order_id(
+            set_approval_status(set_pending_approval(state, pending), "approved"),
+            "ORDER-1",
+        ),
+        finalization,
+    )
+    pending["status"] = "approved"
+    finalization["travel_days"] = 5
+
+    assert updated["pending_approval"]["status"] == "pending"
+    assert updated["finalization_result"]["travel_days"] == 3
+    assert state.get("approval_status") is None
 
 
 def test_set_quality_report_and_increment_revision_count() -> None:

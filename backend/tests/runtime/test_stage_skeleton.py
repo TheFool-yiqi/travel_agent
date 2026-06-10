@@ -3,7 +3,9 @@ import pytest
 from app.runtime.manifest import V1_STAGE_NAMES
 from app.runtime.stages.base import build_default_stage_handlers
 from app.runtime.stages.collect import CollectStageHandler
+from app.runtime.stages.approve_or_revise import ApproveOrReviseStageHandler
 from app.runtime.stages.domain_plan import DomainPlanStageHandler
+from app.runtime.stages.finalize import FinalizeStageHandler
 from app.runtime.stages.integrate import IntegrateStageHandler
 from app.runtime.stages.prepare_base_context import PrepareBaseContextStageHandler
 from app.runtime.stages.retrieve_evidence import RetrieveEvidenceStageHandler
@@ -40,6 +42,10 @@ async def test_all_stage_handlers_return_matching_stage_names() -> None:
         elif isinstance(handler, IntegrateStageHandler):
             assert result["status"] == "failed"
         elif isinstance(handler, VerifyStageHandler):
+            assert result["status"] == "failed"
+        elif isinstance(handler, ApproveOrReviseStageHandler):
+            assert result["status"] == "failed"
+        elif isinstance(handler, FinalizeStageHandler):
             assert result["status"] == "failed"
         else:
             assert result["status"] == "completed"

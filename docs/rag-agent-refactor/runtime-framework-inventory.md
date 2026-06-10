@@ -4,7 +4,7 @@
 门禁。它是迁移事实清单，不是目标目录草图，也不是立即删除旧文件的授权。
 
 ```text
-Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4 / Slice 5 / Slice 6 / Slice 7
+Inventory scope: Slice 1 / Slice 2 / Slice 3 / Slice 4 / Slice 5 / Slice 6 / Slice 7 / Slice 8
 Last verified date: 2026-06-09
 Runtime status values: active / compatibility / reserved / candidate_redundant
 ```
@@ -36,8 +36,8 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/stages/domain_plan.py` | DomainPlannerGroup stage; writes `plan_proposals` | Slice 1 / Slice 6 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/integrate.py` | ItineraryIntegrator stage; writes `itinerary_draft` | Slice 1 / Slice 6 | active | — | — | 2026-06-09 |
 | `backend/app/runtime/stages/verify.py` | QualityVerifier stage; writes `quality_report`, optional auto-revision | Slice 1 / Slice 7 | active | — | — | 2026-06-10 |
-| `backend/app/runtime/stages/approve_or_revise.py` | Approval and revision routing stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
-| `backend/app/runtime/stages/finalize.py` | Finalization stage skeleton | Slice 1 | active | — | — | 2026-06-06 |
+| `backend/app/runtime/stages/approve_or_revise.py` | Approval waiting/completion stage; writes `pending_approval` | Slice 1 / Slice 8 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/stages/finalize.py` | Finalization stage; order_id + final message + persistence | Slice 1 / Slice 8 | active | — | — | 2026-06-10 |
 
 ### Runtime Collect
 
@@ -160,6 +160,21 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/tests/runtime/test_verify_stage.py` | Verify stage handler tests | Slice 7 | active | — | — | 2026-06-10 |
 | `backend/tests/runtime/test_quality_smoke.py` | Slice 7 verify integration smoke tests | Slice 7 | active | — | — | 2026-06-10 |
 
+### Runtime Finalization
+
+| Path | Owner / responsibility | Introduced by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|---------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/runtime/finalization/__init__.py` | Finalization package boundary | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/finalization/schemas.py` | `PendingApproval` and `FinalizationResult` schemas | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/finalization/order_service.py` | Order id generation | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/finalization/final_response.py` | Final user message builder | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/finalization/persistence.py` | Itinerary persistence adapter + stub | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/app/runtime/finalization/approval_payload.py` | Pending approval payload builder | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_finalization_schemas.py` | Finalization schema tests | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_final_response.py` | Final response generator tests | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_approval_finalize_stage.py` | Approval/finalize stage tests | Slice 8 | active | — | — | 2026-06-10 |
+| `backend/tests/runtime/test_approval_finalize_smoke.py` | Slice 8 end-to-end approval/finalize smoke tests | Slice 8 | active | — | — | 2026-06-10 |
+
 ## Reused Existing Files
 
 这些文件仍由现有系统拥有。Slice 1/2 只复用其能力、接口经验或回归测试，不迁移其
@@ -217,7 +232,6 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/runtime/discovery/` | Destination discovery catalog helpers | Slice 4+ | absent | Approved discovery implementation plan | 2026-06-09 |
 | `backend/app/runtime/agents/` | Runtime-owned Agent roles | Slice 6+ | absent | Approved LLM agent implementation plan | 2026-06-09 |
 | `backend/app/runtime/skills/` | Explicit Skill packages and registry | Slice 3+ | absent | First real Skill implementation plan | 2026-06-09 |
-| `backend/app/runtime/finalization/` | Final response, order and finalization schemas | Slice 8 | absent | Approved approval/finalization implementation plan | 2026-06-09 |
 | `backend/app/runtime/observability/` | Runtime trace recorder and optional LangSmith adapter | Later approved Slice | absent | Approved observability implementation plan | 2026-06-09 |
 | `backend/app/ai/prompts/runtime/` | Runtime Agent and Skill prompt files | First real Agent/Skill Slice | absent | Approved prompt owner and input schema | 2026-06-09 |
 
@@ -229,10 +243,7 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 ```text
 PlanningRuntime 尚未成为默认 chat path
-approve_or_revise 及 finalize 仍为 skeleton
-checkpoint / interrupt / resume 尚未接入 Runtime executor
-finalize、持久化和前端 RuntimeEvent 切换尚未实现
-Slice 7 已完成 verify / QualityVerifier / RevisionAgent，但不构成旧 graph 删除条件
+Slice 8 已完成 approve_or_revise / finalize，但前端 RuntimeEvent 切换尚未实现
 ```
 
 旧流程文件只能保持 `compatibility` 状态。后续将文件标记为 `candidate_redundant` 时，
