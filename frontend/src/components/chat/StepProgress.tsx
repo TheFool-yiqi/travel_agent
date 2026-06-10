@@ -9,6 +9,23 @@ const STEPS = [
   { id: "final_response", label: "完成" },
 ] as const;
 
+/** Map V1 PlanningRuntime stage ids to legacy graph step ids for the progress bar. */
+const RUNTIME_STAGE_TO_STEP_ID: Record<string, (typeof STEPS)[number]["id"]> = {
+  collect: "collect_requirements",
+  prepare_base_context: "collect_requirements",
+  retrieve_evidence: "plan_destination",
+  tool_enrich: "plan_destination",
+  domain_plan: "plan_destination",
+  integrate: "build_itinerary",
+  verify: "build_itinerary",
+  approve_or_revise: "approval_node",
+  finalize: "final_response",
+};
+
+function resolveStepId(currentStep: string): string {
+  return RUNTIME_STAGE_TO_STEP_ID[currentStep] ?? currentStep;
+}
+
 type StepProgressProps = {
   currentStep: string | null;
 };
@@ -18,7 +35,7 @@ export function StepProgress({ currentStep }: StepProgressProps) {
     return null;
   }
 
-  const activeIndex = STEPS.findIndex((step) => step.id === currentStep);
+  const activeIndex = STEPS.findIndex((step) => step.id === resolveStepId(currentStep));
 
   return (
     <nav className="step-progress" aria-label="规划进度">

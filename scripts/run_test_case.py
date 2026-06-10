@@ -74,15 +74,34 @@ def run_command(command: list[str], cwd: Path, timeout: int) -> tuple[int, str]:
         "cwd": cwd,
         "capture_output": True,
         "text": True,
+        "encoding": "utf-8",
+        "errors": "replace",
         "timeout": timeout,
     }
     # Windows: npx/npm are .cmd shims; shell=False raises FileNotFoundError.
-    if sys.platform == "win32":
-        proc = subprocess.run(subprocess.list2cmdline(command), shell=True, **kwargs)
-    else:
-        proc = subprocess.run(command, shell=False, **kwargs)
-    output = (proc.stdout or "") + (proc.stderr or "")
-    return proc.returncode, output
+    try:
+        if sys.platform == "win32":
+            proc = subprocess.run(subprocess.list2cmdline(command), shell=True, **kwargs)
+        else:
+            proc = subprocess.run(command, shell=False, **kwargs)
+        output = (proc.stdout or "") + (proc.stderr or "")
+        return proc.returncode, output
+    except subprocess.TimeoutExpired as exc:
+        output = (exc.stdout or "") + (exc.stderr or "")
+        if output:
+            output += "\n"
+        output += f"Command timed out after {timeout} seconds"
+        return 124, output
+
+
+def safe_print(text: str) -> None:
+    """Print on Windows consoles that may not support full Unicode."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(text.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(
+            sys.stdout.encoding or "utf-8", errors="replace"
+        ))
 
 
 def evaluate_result(case: dict, exit_code: int, output: str) -> bool:
@@ -191,10 +210,10 @@ def main() -> None:
         result = run_case(case, suite=args.suite)
         results.append(result)
         status = "PASS" if result.passed else "FAIL"
-        print(f"[{status}] {result.case_id} — {result.title}")
+        safe_print(f"[{status}] {result.case_id} — {result.title}")
         if not result.passed:
-            print(f"  cmd: {' '.join(result.command)}")
-            print(f"  tail:\n{result.output_tail}")
+            safe_print(f"  cmd: {' '.join(result.command)}")
+            safe_print(f"  tail:\n{result.output_tail}")
 
     summary = {
         "manifest_version": manifest.get("version"),

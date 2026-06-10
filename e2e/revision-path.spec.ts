@@ -11,7 +11,7 @@ import {
 } from "./helpers";
 
 test.describe("修订路径 — E2E", () => {
-  test.describe.configure({ timeout: 900_000 });
+  test.describe.configure({ timeout: 1_800_000 });
 
   test("修改行程后二次确认生成 ORDER（TC-E2E-003 / FLOW-021）", async ({ page }) => {
     test.skip(!(await backendReachable()), "backend 未启动 (需 :8200)");

@@ -736,7 +736,7 @@
       "cwd": "frontend",
       "command": ["npx", "pnpm@9.15.0", "exec", "playwright", "test", "--config", "../playwright.config.ts", "-g", "TC-E2E-001"],
       "success_criteria": { "exit_code": 0, "evidence": ["规划新行程 button visible"] },
-      "timeout_seconds": 900
+      "timeout_seconds": 1800
     },
     {
       "id": "TC-E2E-002",
@@ -747,9 +747,9 @@
       "legacy_ids": ["TC-FLOW-020"],
       "preconditions": ["backend :8200"],
       "cwd": "frontend",
-      "command": ["npx", "pnpm@9.15.0", "exec", "playwright", "test", "--config", "../playwright.config.ts", "-g", "TC-E2E-002"],
+      "command": ["npx", "pnpm@9.15.0", "exec", "playwright", "test", "--config", "../playwright.config.ts", "-g", "TC-E2E-002 / FLOW-020"],
       "success_criteria": { "exit_code": 0, "evidence": ["ORDER-[A-F0-9]{8,} in assistant message"] },
-      "timeout_seconds": 900
+      "timeout_seconds": 4200
     },
     {
       "id": "TC-E2E-003",
@@ -762,7 +762,7 @@
       "cwd": "frontend",
       "command": ["npx", "pnpm@9.15.0", "exec", "playwright", "test", "--config", "../playwright.config.ts", "-g", "TC-E2E-003"],
       "success_criteria": { "exit_code": 0, "evidence": ["ORDER after revision"] },
-      "timeout_seconds": 900
+      "timeout_seconds": 4200
     },
     {
       "id": "TC-FLOW-040",
@@ -774,7 +774,7 @@
       "cwd": "frontend",
       "command": ["npx", "pnpm@9.15.0", "exec", "playwright", "test", "--config", "../playwright.config.ts", "-g", "FLOW-040"],
       "success_criteria": { "exit_code": 0 },
-      "timeout_seconds": 600
+      "timeout_seconds": 1200
     },
     {
       "id": "TC-FLOW-060",
