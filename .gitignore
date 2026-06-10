@@ -47,5 +47,13 @@ logs/
 .chroma/
 chroma_data/
 
+# Playwright / local test output
+test-results/
+playwright-report/
+frontend/test-results/
+
+# Agent brainstorm artifacts
+.superpowers/
+
 # uv
 # Keep uv.lock tracked

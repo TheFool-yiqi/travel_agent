@@ -97,11 +97,6 @@ async def app_lifespan(_app: FastAPI) -> AsyncIterator[None]:
                 await apply_step_config_from_mcp()
                 logger.info("步骤配置与 MCP 工具缓存已就绪")
 
-                from app.ai.llm import create_travel_planner
-
-                await create_travel_planner()
-                logger.info("旅行规划 Graph 已预编译")
-
                 try:
                     yield
                 finally:

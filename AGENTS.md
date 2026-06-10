@@ -6,9 +6,9 @@
 
 ## 1. 项目概述
 
-**Travel Agent** 是基于 LangGraph 的智能旅行规划系统：
+**Travel Agent** 是基于 PlanningRuntime 的智能旅行规划系统：
 
-- **后端**：FastAPI + LangGraph + PostgreSQL + Redis + ChromaDB
+- **后端**：FastAPI + PlanningRuntime + PostgreSQL + Redis + ChromaDB
 - **前端**：Vite + React + TypeScript + Tailwind（SPA）
 - **能力**：多轮需求收集 → 分域规划 → 行程整合 → 人工审批 → 修订输出
 
@@ -24,7 +24,7 @@
 
 | 场景 | 示例 |
 |------|------|
-| 需求不明确 | 预算校验放在 `build_itinerary` 还是 `critic_agent` |
+| 需求不明确 | 预算校验放在 `integrate`/`verify` 还是独立 critic 阶段 |
 | 多种可行方案 | 向量库用 Chroma 还是 pgvector |
 | 影响 API 契约 | 新增字段是否 breaking change |
 | 第三方服务选型 | 天气已选 Open-Meteo；若改 QWeather 主源需确认 |
@@ -116,36 +116,35 @@ Agent/Node → tools/xxx.py
 
 ---
 
-## 5. LangGraph 约定
+## 5. PlanningRuntime 约定
 
-### 5.1 节点流程
+### 5.1 阶段流程
 
 ```
-collect_requirements → plan_destination → plan_transport
-  → plan_stay_and_food → plan_activities → build_itinerary
-  → approval_node → final_response
-         ↓ (拒绝/质检失败)
-    revise_itinerary → 回到规划链
+collect → prepare_base_context → retrieve_evidence → tool_enrich
+  → domain_plan → integrate → verify → approve_or_revise → finalize
+         ↓ (用户修订)
+    approve_or_revise → verify → …
 ```
 
-- 追问缺失信息：`collect_requirements` + `requirement_router` 路由回自身
-- 预算校验：`build_itinerary` 或 `critic_agent`，不单独加节点（除非用户确认）
-- Checkpoint：使用 `langgraph-checkpoint-postgres`，封装在 `graph/checkpoint.py`
+- 追问缺失信息：`collect` 阶段暂停，等待下轮用户输入
+- 预算校验：`integrate` / `verify` 阶段
+- 会话状态：持久化在 `travel_sessions.extra_info.planning_runtime`
 
 ### 5.2 状态管理
 
-- 状态定义：`graph/state.py`
-- Reducer：`graph/reducers.py`
-- WS 事件格式：`graph/events.py`（`node_start`, `tool_call`, `token`, `approval_required`, `done`）
+- Runtime 状态：`runtime/state.py`（`RuntimeState`）
+- 旧 graph 状态：`graph/state.py`（`TravelState`，仅供 collect 等共享模块）
+- SSE 事件：`runtime/events.py` → `services/runtime_chat_stream.frontend_adapter`
 
-### 5.3 新增节点检查清单
+### 5.3 新增阶段检查清单
 
-新增 graph 节点前确认：
+新增 runtime stage 前确认：
 
-1. 对应 `agents/` 和 `ai/prompts/*.md` 是否已有
-2. 是否需要新 `tools/`
-3. 是否影响 `TravelState` 字段（需同步 `schemas/travel.py`）
-4. 是否需 WS 新事件类型（需同步前端 `types/`）
+1. 是否已在 `runtime/manifest.py` 注册
+2. 对应 `agents/` 和 prompt 是否已有
+3. 是否影响 `RuntimeState` 字段
+4. 是否需 SSE 新事件类型（需同步前端 `types/`）
 
 ---
 

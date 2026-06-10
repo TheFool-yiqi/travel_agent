@@ -223,26 +223,37 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 | `backend/app/tools/weather.py` | Existing LangChain weather tool entry | Reused by Slice 5 through WeatherToolAdapter | compatibility | `backend/app/runtime/tools/weather_adapter.py` | Runtime tool_enrich is default path and old graph weather path retires | 2026-06-09 |
 | `backend/app/mcp/adapters/weather_adapter.py` | Existing QWeather / MCP weather adapter | Reused by Slice 5 through tools/weather.py | compatibility | `backend/app/runtime/tools/weather_adapter.py` | Runtime tool_enrich is default path | 2026-06-09 |
 
+## Retired Old Flow Files (2026-06-09)
+
+下列旧 LangGraph 编排文件已在 Runtime 成为默认 chat path 后删除；replacement 已上线并通过回归测试。
+
+| Path | Replacement path | Retired date |
+|------|------------------|--------------|
+| `backend/app/graph/builder.py` | `backend/app/runtime/executor/graph_builder.py` | 2026-06-09 |
+| `backend/app/graph/rollback.py` | Runtime stage resume / session state | 2026-06-09 |
+| `backend/app/graph/nodes/plan_destination.py` | `backend/app/runtime/stages/domain_plan.py` | 2026-06-09 |
+| `backend/app/graph/nodes/plan_transport.py` | `backend/app/runtime/stages/domain_plan.py` | 2026-06-09 |
+| `backend/app/graph/nodes/plan_stay_and_food.py` | `backend/app/runtime/stages/domain_plan.py` | 2026-06-09 |
+| `backend/app/graph/nodes/plan_activities.py` | `backend/app/runtime/stages/domain_plan.py` | 2026-06-09 |
+| `backend/app/graph/nodes/build_itinerary.py` | `backend/app/runtime/stages/integrate.py` | 2026-06-09 |
+| `backend/app/graph/nodes/approval_node.py` | `backend/app/runtime/stages/approve_or_revise.py` | 2026-06-09 |
+| `backend/app/graph/nodes/revise_itinerary.py` | `backend/app/runtime/stages/approve_or_revise.py` | 2026-06-09 |
+| `backend/app/graph/nodes/final_response.py` | `backend/app/runtime/stages/finalize.py` | 2026-06-09 |
+| `backend/app/graph/nodes/inject_memory.py` | `backend/app/runtime/stages/prepare_base_context.py` | 2026-06-09 |
+| `backend/app/graph/routers/step_router.py` | `backend/app/runtime/manifest.py` | 2026-06-09 |
+| `backend/scripts/demo_graph_flow.py` 等 graph demo 脚本 | Runtime smoke / pytest | 2026-06-09 |
+| `backend/app/ai/prompts/plan_*.md`, `build_itinerary.md`, `final_response.md` | Runtime domain prompts | 2026-06-09 |
+
 ## Compatibility-Only Old Flow Files
 
-下列文件仍是当前旧线上流程的一部分。它们只对新 Runtime 具有兼容和迁移参考价值，
-但在 Runtime 成为默认主路径前仍不可删除。
+下列文件仍被 Runtime 或共享库引用，暂不可删除。
 
-| Path | Owner / responsibility | Introduced or reused by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
-|------|------------------------|-------------------------------|----------------|------------------|------------------------|-------------------|
-| `backend/app/graph/builder.py` | Builds the existing travel graph | Existing old flow | compatibility | `backend/app/runtime/executor/graph_builder.py` | Runtime becomes default path; checkpoint, streaming, approval and finalization parity verified | 2026-06-06 |
-| `backend/app/graph/state.py` | Existing graph `TravelState` | Existing old flow | compatibility | `backend/app/runtime/state.py` for new flow only | Old graph retired and no active API/service depends on TravelState | 2026-06-06 |
-| `backend/app/graph/nodes/collect_requirements.py` | Existing multi-turn requirement collection node | Existing old flow | compatibility | `backend/app/runtime/collect/` plus `backend/app/runtime/stages/collect.py` | Runtime collect is default path and multi-turn/greeting/resume regression coverage is migrated | 2026-06-09 |
-| `backend/app/graph/nodes/plan_destination.py` | Existing destination planning node | Existing old flow | compatibility | `backend/app/runtime/stages/domain_plan.py` plus future domain agents | Real DomainPlannerGroup is implemented and old graph is retired | 2026-06-06 |
-| `backend/app/graph/nodes/plan_transport.py` | Existing transport planning node | Existing old flow | compatibility | Future RouteTransportActivityPlanner through `domain_plan` | Transport constraints and degradation behavior pass Runtime tests | 2026-06-06 |
-| `backend/app/graph/nodes/plan_stay_and_food.py` | Existing stay and food planning node | Existing old flow | compatibility | Future StayFoodPlanner through `domain_plan` | Stay/food proposal and integration behavior pass Runtime tests | 2026-06-06 |
-| `backend/app/graph/nodes/plan_activities.py` | Existing activity planning node | Existing old flow | compatibility | Future RouteTransportActivityPlanner through `domain_plan` | Activity proposal and integration behavior pass Runtime tests | 2026-06-06 |
-| `backend/app/graph/nodes/build_itinerary.py` | Existing itinerary assembly node | Existing old flow | compatibility | `backend/app/runtime/stages/integrate.py` plus future integrator | Real integration, budget and persistence parity verified | 2026-06-06 |
-| `backend/app/graph/nodes/approval_node.py` | Existing approval node | Existing old flow | compatibility | `backend/app/runtime/stages/approve_or_revise.py` | Runtime approval interrupt/resume is implemented and frontend switched | 2026-06-06 |
-| `backend/app/graph/nodes/revise_itinerary.py` | Existing itinerary revision node | Existing old flow | compatibility | Future RevisionAgent through `approve_or_revise` | Runtime revision routing and quality verification pass regression tests | 2026-06-06 |
-| `backend/app/graph/nodes/final_response.py` | Existing final response and order generation node | Existing old flow | compatibility | `backend/app/runtime/stages/finalize.py` plus future finalization modules | Runtime finalization persists itinerary/order exactly once and frontend consumes events | 2026-06-06 |
-| `backend/app/graph/routers/step_router.py` | Existing graph step routing | Existing old flow | compatibility | Runtime manifest edges and future stage policies | Old graph retired and no active caller imports router | 2026-06-06 |
-| `backend/app/graph/routers/approval_router.py` | Existing approval routing | Existing old flow | compatibility | Future `approve_or_revise` routing policy | Runtime approval/revision tests replace existing behavior coverage | 2026-06-06 |
+| Path | Owner / responsibility | Runtime status | Replacement path | Last verified date |
+|------|------------------------|----------------|------------------|-------------------|
+| `backend/app/graph/state.py` | `TravelState` for collect / shared modules | compatibility | `backend/app/runtime/state.py` for new flow | 2026-06-09 |
+| `backend/app/graph/nodes/collect_requirements.py` | Multi-turn requirement collection | compatibility | `backend/app/runtime/stages/collect.py` | 2026-06-09 |
+| `backend/app/graph/routers/approval_router.py` | Approval/revision keyword detection | compatibility | `backend/app/runtime/stages/approve_or_revise.py` | 2026-06-09 |
+| `backend/app/graph/semantic/`, `validators/`, `nl_extract.py` | Shared extraction & validation | reused | Same paths | 2026-06-09 |
 
 ## Future Slice Files Not Created Yet
 
@@ -260,21 +271,12 @@ Runtime status values: active / compatibility / reserved / candidate_redundant
 
 ## Candidate Redundant Files
 
-当前没有文件满足 `candidate_redundant` 条件。
-
-原因：
-
-```text
-PlanningRuntime 尚未成为默认 chat path
-Slice 8 已完成 approve_or_revise / finalize，但前端 RuntimeEvent 切换尚未实现
-```
-
-旧流程文件只能保持 `compatibility` 状态。后续将文件标记为 `candidate_redundant` 时，
-必须新增包含以下全部字段的记录：
-
-| Path | Owner / responsibility | Introduced or reused by slice | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
-|------|------------------------|-------------------------------|----------------|------------------|------------------------|-------------------|
-| No candidate identified | — | — | — | — | — | 2026-06-06 |
+| Path | Owner / responsibility | Runtime status | Replacement path | Deletion prerequisites | Last verified date |
+|------|------------------------|----------------|------------------|------------------------|-------------------|
+| `backend/app/knowledge/rag_service.py` | Chunk-oriented RAG for retired graph nodes | candidate_redundant | `backend/app/knowledge/evidence_engine.py` | No active import outside legacy tests/docs | 2026-06-09 |
+| `backend/app/graph/step_config.py` | Old step prompt/tool config for retired nodes | candidate_redundant | Runtime stage configs | Collect middleware migrated off step_config | 2026-06-09 |
+| `backend/app/graph/steps.py` | Old SSE step labels | candidate_redundant | `runtime/manifest.py` + frontend_adapter | Frontend no longer expects old step names | 2026-06-09 |
+| `docs/langgraph_flow.md` | Old graph flow doc | candidate_redundant | `docs/architecture.md` §6 | Links updated across docs | 2026-06-09 |
 
 ## Deletion Gate
 

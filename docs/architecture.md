@@ -7,13 +7,13 @@
 
 ## 1. 系统概述
 
-Travel Agent 是一个智能旅行规划平台。V1 线上主路径已切换为 **PlanningRuntime** 九阶段内核；旧 **LangGraph 状态机** 仍可通过 `CHAT_PLANNER_BACKEND=graph` 作为兼容入口保留。
+Travel Agent 是一个智能旅行规划平台。V1 线上主路径为 **PlanningRuntime** 九阶段内核；旧 LangGraph 逐步编排节点已退役，共享语义/校验库仍保留在 `graph/` 下供 collect 等阶段复用。
 
 用户通过 Web 界面发起旅行规划会话，系统以 collect → evidence → domain plan → integrate → verify → approval → finalize 流程产出行程与订单。
 
 ### 1.1 设计目标
 
-- **可编排**：PlanningRuntime 显式建模九阶段流程；LangGraph 仍可用于 executor / checkpoint 集成
+- **可编排**：PlanningRuntime 显式建模九阶段流程；LangGraph 仅用于 transport 子 Agent 等局部 ReAct 集成
 - **可暂停恢复**：RuntimeState 持久化在 `travel_sessions.extra_info.planning_runtime`；collect / approval 多轮 resume
 - **可扩展**：工具层与 MCP 层解耦，便于接入新旅行服务
 - **可观测**：LangSmith 追踪 LLM 调用链（collect 等阶段）
@@ -144,7 +144,8 @@ travel_agent/
 │   ├── middleware/             # CORS、日志、错误、限流
 │   ├── api/v1/                 # REST API
 │   ├── ws/                     # WebSocket 流式
-│   ├── graph/                  # LangGraph 状态机
+│   ├── graph/                  # 共享语义/校验/collect（旧编排节点已退役）
+│   ├── runtime/                # PlanningRuntime 九阶段内核
 │   ├── agents/                 # 领域 Agent
 │   ├── ai/                     # LLM + Embedding + Prompts
 │   ├── tools/                  # 业务工具
@@ -181,8 +182,9 @@ Client → middleware (request_id, cors, logging, error_handler)
 ```
 Client → api/v1/chat.stream (SSE) 或 ws/chat_stream
        → services/chat_stream.iter_chat_events()
-       → LangGraph astream_events
-       → token / step / itinerary / approval_required / done 事件
+       → services/runtime_chat_stream.iter_chat_events_runtime()
+       → PlanningRuntime（九阶段 manifest）
+       → frontend_adapter 映射为 token / step / itinerary / approval_required / done
        → 推送至客户端
 ```
 
@@ -200,56 +202,54 @@ Client → api/v1/chat.stream (SSE) 或 ws/chat_stream
 
 ---
 
-## 6. LangGraph 规划流程
+## 6. PlanningRuntime 规划流程
+
+九阶段顺序（`backend/app/runtime/manifest.py`）：
+
+```text
+collect → prepare_base_context → retrieve_evidence → tool_enrich
+  → domain_plan → integrate → verify → approve_or_revise → finalize
+```
 
 ```mermaid
 stateDiagram-v2
-    [*] --> inject_user_memory
-    inject_user_memory --> collect_requirements
-    inject_user_memory --> plan_destination
-    inject_user_memory --> plan_transport
-    inject_user_memory --> plan_stay_and_food
-    inject_user_memory --> plan_activities
-    inject_user_memory --> build_itinerary
-    inject_user_memory --> approval_node
-    inject_user_memory --> final_response
-    collect_requirements --> [*]: missing_info / await_user
-    collect_requirements --> plan_destination: ready
-    plan_destination --> [*]: await_transport_choice
-    plan_transport --> [*]: await_stay_food_choice
-    plan_stay_and_food --> [*]: await_activity_choice
-    plan_activities --> build_itinerary
-    build_itinerary --> approval_node: ok
-    approval_node --> [*]: pending_or_unknown
-    approval_node --> final_response: approved
-    approval_node --> revise_itinerary: rejected
-    revise_itinerary --> build_itinerary
-    final_response --> [*]
+    [*] --> collect
+    collect --> [*]: missing_info / await_user
+    collect --> prepare_base_context: ready
+    prepare_base_context --> retrieve_evidence
+    retrieve_evidence --> tool_enrich
+    tool_enrich --> domain_plan
+    domain_plan --> integrate
+    integrate --> verify
+    verify --> approve_or_revise
+    approve_or_revise --> [*]: pending_or_unknown
+    approve_or_revise --> finalize: approved
+    approve_or_revise --> verify: user_revision
+    finalize --> [*]
 ```
 
-### 6.1 节点与 Agent 映射
+### 6.1 阶段职责
 
-| Graph 节点 | Agent | Prompt |
-|------------|-------|--------|
-| `inject_user_memory` | — | LangGraph Store 记忆 → `memory_context`（不写入 messages） |
-| `collect_requirements` | `planner_agent` | `collect_requirements.md` |
-| `plan_destination` | `destination_agent` | `destination_planner.md` |
-| `plan_transport` | `transport_agent` | `transport_planner.md` |
-| `plan_stay_and_food` | `local_experience_agent` | `local_experience_planner.md` |
-| `plan_activities` | `local_experience_agent` | `local_experience_planner.md` |
-| `build_itinerary` | `planner_agent` | `itinerary_builder.md` |
-| `approval_node` | — | 对话式审批 |
-| `revise_itinerary` | `planner_agent` | `revision.md` |
-| `final_response` | — | 格式化输出 |
-| 质检 | `critic_agent` | `critic.md` |
+| Stage | 模块 | 职责 |
+|-------|------|------|
+| `collect` | `runtime/stages/collect.py` | 多轮需求收集（复用 `graph/nodes/collect_requirements`） |
+| `prepare_base_context` | `runtime/stages/prepare_base_context.py` | 组装 AgentContext |
+| `retrieve_evidence` | `runtime/stages/retrieve_evidence.py` | EvidenceEngine 检索 |
+| `tool_enrich` | `runtime/stages/tool_enrich.py` | 天气等工具补全 |
+| `domain_plan` | `runtime/stages/domain_plan.py` | 目的地/交通/食宿/活动规划 |
+| `integrate` | `runtime/stages/integrate.py` | 行程草案整合 |
+| `verify` | `runtime/stages/verify.py` | 约束与质量校验 |
+| `approve_or_revise` | `runtime/stages/approve_or_revise.py` | 用户确认或修订 |
+| `finalize` | `runtime/stages/finalize.py` | 持久化行程与最终响应 |
 
-### 6.2 条件路由
+### 6.2 共享 graph 库（非编排）
 
-| Router | 职责 |
-|--------|------|
-| `requirement_router` | 需求是否完整，决定追问或进入规划 |
-| `approval_router` | 审批通过/拒绝/超时 |
-| `error_router` | 异常降级与重试 |
+| 模块 | 职责 |
+|------|------|
+| `graph/semantic/` | 目的地解析、槽位绑定、纠错 |
+| `graph/validators/` | 需求校验 |
+| `graph/routers/approval_router.py` | 确认/修订关键词检测 |
+| `graph/nl_extract.py` | 规则 + LLM 结构化抽取 |
 
 ---
 
@@ -258,8 +258,8 @@ stateDiagram-v2
 | 层 | 模块 | 职责 |
 |----|------|------|
 | 接入层 | `api/`, `ws/`, `middleware/` | HTTP/WS 协议、校验、横切 |
-| 业务层 | `services/` | 编排、事务、调用 graph |
-| Agent 层 | `graph/`, `agents/` | 状态机、LLM 推理 |
+| 业务层 | `services/` | 编排、事务、调用 runtime |
+| Agent 层 | `runtime/`, `agents/` | 九阶段规划、LLM 推理 |
 | AI 层 | `ai/` | 模型客户端、Prompt、结构化输出 |
 | 工具层 | `tools/`, `mcp/` | 外部能力封装 |
 | 知识层 | `knowledge/` | 文档入库与检索 |

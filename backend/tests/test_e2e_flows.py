@@ -5,7 +5,6 @@ from __future__ import annotations
 import pytest
 
 from app.graph.routers.approval_router import user_wants_approval, user_wants_revision
-from app.graph.routers.step_router import route_after_collect
 from app.graph.semantic.correction_handler import detect_user_correction
 from app.tools.holiday_calendar import extract_whole_holiday_travel_days
 
@@ -21,8 +20,9 @@ def test_e2e_006_smoke_paths_importable() -> None:
 
 
 def test_e2e_009_backend_no_llm_routes() -> None:
-    """TC-E2E-009: 路由层不依赖 LLM."""
-    assert route_after_collect({"requirements_complete": True, "user_confirmed": False}) == "__end__"
+    """TC-E2E-009: 审批关键词检测不依赖 LLM."""
+    assert user_wants_approval("确认")
+    assert user_wants_revision("修改酒店")
 
 
 def test_e2e_015_pytest_not_integration_marker() -> None:
@@ -50,13 +50,3 @@ def test_flow_051_correction_destination() -> None:
 def test_flow_050_whole_holiday() -> None:
     """TC-FLOW-050: 整个假期 → 3 天."""
     assert extract_whole_holiday_travel_days("整个假期", {"departure_date": "2026-06-19"}) == 3
-
-
-def test_flow_019_incomplete_collect_stays() -> None:
-    """TC-FLOW-019: 缺 budget 不进 plan."""
-    state = {
-        "requirements_complete": False,
-        "user_confirmed": False,
-        "user_requirement": {"destination": "北京"},
-    }
-    assert route_after_collect(state) == "__end__"
