@@ -117,7 +117,11 @@ export async function ensureDepartureCity(page: Page, city: string): Promise<voi
 }
 
 /** 主路径需求收集 7 步（北京/上海/2026-06-19/3天/1人/穷游党/对的） */
-export async function completeRequirementCollection(page: Page): Promise<void> {
+export async function completeRequirementCollection(
+  page: Page,
+  options?: { waitForApproval?: boolean },
+): Promise<void> {
+  const waitForApproval = options?.waitForApproval ?? true;
   await sendChatMessage(page, "北京");
   await waitForAssistantReply(
     page,
@@ -134,14 +138,35 @@ export async function completeRequirementCollection(page: Page): Promise<void> {
   await sendChatMessage(page, "穷游党");
   await waitForAssistantReply(page, /(整理|对吗|确认|需求|理解)/, 300_000);
   await sendChatMessage(page, "对的");
-  await waitForApprovalReady(page, 600_000);
+  await waitForChatReady(page, 600_000);
+  if (waitForApproval) {
+    await waitForApprovalReady(page, 600_000);
+  }
 }
 
 /** 等待审批横幅出现且流式输出结束 */
 export async function waitForApprovalReady(page: Page, timeout = 600_000): Promise<void> {
-  await expect(page.getByRole("region", { name: "行程确认" })).toBeVisible({ timeout });
+  const approvalRegion = page.getByRole("region", { name: "行程确认" });
+  const confirmButton = page.getByRole("button", { name: "确认行程" });
+
+  await expect
+    .poll(
+      async () => {
+        if (await approvalRegion.isVisible()) {
+          return "ready";
+        }
+        const toastError = page.getByText(/规划运行失败|暂时无法处理|发送失败/i);
+        if (await toastError.isVisible()) {
+          throw new Error(`规划失败: ${await toastError.textContent()}`);
+        }
+        return "waiting";
+      },
+      { timeout, intervals: [2000, 5000, 10000] },
+    )
+    .toBe("ready");
+
   await waitForChatReady(page, timeout);
-  await expect(page.getByRole("button", { name: "确认行程" })).toBeEnabled({ timeout: 60_000 });
+  await expect(confirmButton).toBeEnabled({ timeout: 60_000 });
 }
 
 /** PlanningRuntime 在 collect 完成后自动跑完整条链路，等待审批横幅即可。 */

@@ -9,7 +9,7 @@ from app.graph.validators.requirements import validate_requirements
 from app.runtime.collect.schemas import PlanningFact, PlanningNeed
 
 _CONFIRM_PATTERN = re.compile(
-    r"^(对|是的?|嗯|没错|是|好|确认|可以|没问题|ok|OK)[!.?？\s]*$",
+    r"^(确认|没问题|对的?|可以|就这些|没错|正确|对|是的?|嗯|是|好|ok|OK)[!.?？\s]*$",
     re.IGNORECASE,
 )
 _DRAFT_REQUEST_PATTERN = re.compile(

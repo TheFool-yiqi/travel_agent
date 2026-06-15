@@ -92,3 +92,51 @@
 | TC-API-020 | PASS |
 | TC-SEC-001 | PASS |
 | TC-SEC-004 | PASS |
+
+## AI Runner — 2026-06-10 17:19 UTC
+- Manifest: v3.0
+- Cases: 1 · PASS 1 · FAIL 0
+
+| Case | Result |
+|------|--------|
+| TC-E2E-002 | PASS |
+
+## AI Runner — 2026-06-10 17:20 UTC
+- Manifest: v3.0
+- Cases: 1 · PASS 1 · FAIL 0
+
+| Case | Result |
+|------|--------|
+| TC-E2E-003 | PASS |
+
+## AI Runner — 2026-06-10 17:20 UTC
+- Manifest: v3.0
+- Cases: 1 · PASS 1 · FAIL 0
+
+| Case | Result |
+|------|--------|
+| TC-FLOW-040 | PASS |
+
+## AI Runner — 2026-06-10 17:20 UTC
+- Manifest: v3.0
+- Cases: 1 · PASS 1 · FAIL 0
+
+| Case | Result |
+|------|--------|
+| TC-FLOW-060 | PASS |
+
+## AI Runner — 2026-06-10 17:21 UTC
+- Manifest: v3.0
+- Cases: 1 · PASS 1 · FAIL 0
+
+| Case | Result |
+|------|--------|
+| TC-SUITE-FULL-BACKEND | PASS |
+
+## AI Runner — 2026-06-15 12:37 UTC
+- Manifest: v3.0
+- Cases: 1 · PASS 1 · FAIL 0
+
+| Case | Result |
+|------|--------|
+| TC-E2E-001 | PASS |

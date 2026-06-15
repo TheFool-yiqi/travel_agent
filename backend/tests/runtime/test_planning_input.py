@@ -7,9 +7,14 @@ from pydantic import ValidationError
 
 from app.runtime.collect.planning_input import (
     compile_planning_need,
+    detect_user_confirmed,
     validate_planning_input,
 )
 from app.runtime.collect.schemas import PlanningNeed
+
+
+def test_detect_user_confirmed_accepts_dui_de() -> None:
+    assert detect_user_confirmed(user_message="对的", conversation_state={})
 
 
 def test_compile_planning_need_only_uses_trip_spec_values() -> None:
