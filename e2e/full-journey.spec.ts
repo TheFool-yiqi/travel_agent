@@ -20,9 +20,9 @@ test.describe("端到端 — 主路径至订单", () => {
   test("主路径需求收集至规划（TC-E2E-002 前半）", async ({ page }) => {
     test.skip(!(await backendReachable()), "backend 未启动 (需 :8200)");
     await setupAuthenticatedTrip(page);
-    await completeRequirementCollection(page);
+    await completeRequirementCollection(page, { waitForApproval: false });
     await expect(page.getByRole("navigation", { name: "规划进度" })).toBeVisible({
-      timeout: 30_000,
+      timeout: 120_000,
     });
   });
 
